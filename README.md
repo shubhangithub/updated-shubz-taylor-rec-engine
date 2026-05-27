@@ -8,9 +8,9 @@
 
 This is a music recommendation engine built around one of the most studied and obsessed-over catalogs in modern music: Taylor Swift's. But it is not a Taylor Swift fan project. It is a serious attempt to answer a deceptively hard question: *why do two songs feel the same?*
 
-To find out, we built six independent ML engines — each implementing a real, published research technique — and pointed them at 801 songs across 46 artists. A Sentence-BERT transformer reads lyrics as meaning. A Variational Autoencoder compresses 384 dimensions of feeling into 16. A Node2Vec graph walker discovers connections no playlist algorithm would surface. A Neural Collaborative Filter learns taste the way Netflix learned movies. A Knowledge Graph reasons over 561 nodes of structured musical relationships. And a Contrastive SSL model, trained with the same NT-Xent loss that taught machines to see, learns what makes two songs similar without ever being told.
+To find out, six independent ML engines — each implementing a real, published research technique — are pointed at 801 songs across 46 artists. A Sentence-BERT transformer reads lyrics as meaning. A Variational Autoencoder compresses 384 dimensions of feeling into 16. A Node2Vec graph walker discovers connections no playlist algorithm would surface. A Neural Collaborative Filter learns taste the way Netflix learned movies. A Knowledge Graph reasons over 561 nodes of structured musical relationships. And a Contrastive SSL model, trained with the same NT-Xent loss that taught machines to see, learns what makes two songs similar without ever being told.
 
-The result is a 3D constellation of Taylor Swift's universe — every song a star, every connection a thread of light — with Whisper-synced karaoke, hand-written editorial bridges connecting Taylor to 53 other artists, and four data science investigations that read like magazine features. It started as a school project. It became something we couldn't stop building.
+The result is a 3D constellation of Taylor Swift's universe — every song a star, every connection a thread of light — with Whisper-synced karaoke, hand-written editorial bridges connecting Taylor to 53 other artists, and four data science investigations that read like magazine features.
 
 ## The Six Engines
 
@@ -118,7 +118,7 @@ To deploy your own fork, set these environment variables:
 
 ## Contributing
 
-We welcome new engines, new artists, new editorial bridges, and visual improvements. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+New engines, new artists, new editorial bridges, and visual improvements are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ## License
 

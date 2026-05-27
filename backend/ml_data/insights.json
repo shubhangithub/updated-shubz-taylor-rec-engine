@@ -1,0 +1,410 @@
+{
+  "acousticness_ucurve": {
+    "title": "The U-Curve of Acousticness: Taylor Swift's Sonic Return to Roots",
+    "hypothesis": "Taylor's acousticness follows a U-shaped curve — high in her country debut, dropping through her pop era, then rising again with folklore/evermore/TTPD.",
+    "data_points": [
+      {
+        "era": "Taylor Swift",
+        "year": 2006,
+        "acousticness_mean": 0.2555,
+        "acousticness_std": 0.2374,
+        "energy_mean": 0.6164,
+        "song_count": 21
+      },
+      {
+        "era": "Fearless",
+        "year": 2008,
+        "acousticness_mean": 0.2092,
+        "acousticness_std": 0.2428,
+        "energy_mean": 0.623,
+        "song_count": 45
+      },
+      {
+        "era": "Speak Now",
+        "year": 2010,
+        "acousticness_mean": 0.2139,
+        "acousticness_std": 0.2615,
+        "energy_mean": 0.6533,
+        "song_count": 42
+      },
+      {
+        "era": "Red",
+        "year": 2012,
+        "acousticness_mean": 0.3173,
+        "acousticness_std": 0.3084,
+        "energy_mean": 0.5422,
+        "song_count": 83
+      },
+      {
+        "era": "1989",
+        "year": 2014,
+        "acousticness_mean": 0.1693,
+        "acousticness_std": 0.2462,
+        "energy_mean": 0.6443,
+        "song_count": 41
+      },
+      {
+        "era": "reputation",
+        "year": 2017,
+        "acousticness_mean": 0.1385,
+        "acousticness_std": 0.2202,
+        "energy_mean": 0.5829,
+        "song_count": 15
+      },
+      {
+        "era": "Lover",
+        "year": 2019,
+        "acousticness_mean": 0.3337,
+        "acousticness_std": 0.3461,
+        "energy_mean": 0.5452,
+        "song_count": 18
+      },
+      {
+        "era": "folklore",
+        "year": 2020,
+        "acousticness_mean": 0.7176,
+        "acousticness_std": 0.1719,
+        "energy_mean": 0.4158,
+        "song_count": 17
+      },
+      {
+        "era": "evermore",
+        "year": 2020,
+        "acousticness_mean": 0.7941,
+        "acousticness_std": 0.1184,
+        "energy_mean": 0.4941,
+        "song_count": 17
+      },
+      {
+        "era": "Midnights",
+        "year": 2022,
+        "acousticness_mean": 0.4005,
+        "acousticness_std": 0.2904,
+        "energy_mean": 0.4691,
+        "song_count": 24
+      }
+    ],
+    "regression": {
+      "type": "quadratic",
+      "r_squared": 0.4353,
+      "is_u_shaped": true,
+      "coefficient_a": 0.00297
+    },
+    "pop_peak": {
+      "era": "reputation",
+      "year": 2017,
+      "acousticness": 0.1385
+    },
+    "finding": "The data confirms a U-shaped curve (R²=0.4353). The acousticness minimum was during the reputation era (2017).",
+    "n_songs": 323
+  },
+  "valence_sentiment": {
+    "title": "Do Sad Songs Sound Sad? Audio Valence Across Taylor's Discography",
+    "hypothesis": "Spotify's audio valence (musical positiveness) should track the emotional trajectory of Taylor's albums.",
+    "data_points": [
+      {
+        "era": "Taylor Swift",
+        "year": 2006,
+        "valence_mean": 0.4466,
+        "valence_std": 0.1753,
+        "avg_lyrics_length": 1329,
+        "sad_song_count": 2,
+        "total_songs": 21,
+        "sad_percentage": 9.5
+      },
+      {
+        "era": "Fearless",
+        "year": 2008,
+        "valence_mean": 0.4042,
+        "valence_std": 0.179,
+        "avg_lyrics_length": 1741,
+        "sad_song_count": 4,
+        "total_songs": 45,
+        "sad_percentage": 8.9
+      },
+      {
+        "era": "Speak Now",
+        "year": 2010,
+        "valence_mean": 0.4059,
+        "valence_std": 0.2082,
+        "avg_lyrics_length": 2032,
+        "sad_song_count": 2,
+        "total_songs": 42,
+        "sad_percentage": 4.8
+      },
+      {
+        "era": "Red",
+        "year": 2012,
+        "valence_mean": 0.3949,
+        "valence_std": 0.1835,
+        "avg_lyrics_length": 1821,
+        "sad_song_count": 13,
+        "total_songs": 83,
+        "sad_percentage": 15.7
+      },
+      {
+        "era": "1989",
+        "year": 2014,
+        "valence_mean": 0.429,
+        "valence_std": 0.2165,
+        "avg_lyrics_length": 2157,
+        "sad_song_count": 3,
+        "total_songs": 41,
+        "sad_percentage": 7.3
+      },
+      {
+        "era": "reputation",
+        "year": 2017,
+        "valence_mean": 0.2934,
+        "valence_std": 0.1305,
+        "avg_lyrics_length": 2416,
+        "sad_song_count": 1,
+        "total_songs": 15,
+        "sad_percentage": 6.7
+      },
+      {
+        "era": "Lover",
+        "year": 2019,
+        "valence_mean": 0.4814,
+        "valence_std": 0.1775,
+        "avg_lyrics_length": 1915,
+        "sad_song_count": 0,
+        "total_songs": 18,
+        "sad_percentage": 0.0
+      },
+      {
+        "era": "folklore",
+        "year": 2020,
+        "valence_mean": 0.3614,
+        "valence_std": 0.1548,
+        "avg_lyrics_length": 1533,
+        "sad_song_count": 5,
+        "total_songs": 17,
+        "sad_percentage": 29.4
+      },
+      {
+        "era": "evermore",
+        "year": 2020,
+        "valence_mean": 0.4335,
+        "valence_std": 0.1747,
+        "avg_lyrics_length": 1807,
+        "sad_song_count": 2,
+        "total_songs": 17,
+        "sad_percentage": 11.8
+      },
+      {
+        "era": "Midnights",
+        "year": 2022,
+        "valence_mean": 0.2696,
+        "valence_std": 0.1874,
+        "avg_lyrics_length": 1843,
+        "sad_song_count": 10,
+        "total_songs": 24,
+        "sad_percentage": 41.7
+      }
+    ],
+    "valence_lyrics_correlation": -0.3123,
+    "saddest_era": {
+      "era": "Midnights",
+      "valence": 0.2696,
+      "sad_pct": 41.7
+    },
+    "happiest_era": {
+      "era": "Lover",
+      "valence": 0.4814
+    },
+    "finding": "The saddest era by audio valence is Midnights (mean valence 0.2696), with 41.7% of songs qualifying as 'sad' (valence<0.3, energy<0.4). The correlation between valence and lyrics length is -0.31 — moderate negative, suggesting sadder songs have longer lyrics.",
+    "n_songs": 323
+  },
+  "engine_consensus": {
+    "title": "When 6 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
+    "hypothesis": "Different ML architectures capture different aspects of musical similarity. Engines trained on lyrics vs. audio vs. graphs should produce divergent but complementary recommendations.",
+    "engines": [
+      {
+        "name": "Transformer Lyrics",
+        "key": "lyrics_transformer",
+        "dim": 384,
+        "signal": "semantic meaning",
+        "paper": "Reimers & Gurevych (2019)",
+        "expected_bias": "Lyrical similarity — songs about similar topics"
+      },
+      {
+        "name": "VAE Latent Space",
+        "key": "vae_latent",
+        "dim": 16,
+        "signal": "compressed semantics",
+        "paper": "Kingma & Welling (2013)",
+        "expected_bias": "Non-linear lyrical patterns — narrative arc similarity"
+      },
+      {
+        "name": "Graph Node2Vec",
+        "key": "graph_node2vec",
+        "dim": 64,
+        "signal": "structural graph position",
+        "paper": "Grover & Leskovec (2016)",
+        "expected_bias": "Songs connected through shared audio features + era membership"
+      },
+      {
+        "name": "Neural Collaborative",
+        "key": "ncf",
+        "dim": 48,
+        "signal": "multi-modal interaction",
+        "paper": "He et al. (2017)",
+        "expected_bias": "Songs that similar patterns of features + editorial bridges suggest"
+      },
+      {
+        "name": "Knowledge Graph",
+        "key": "knowledge_graph",
+        "dim": 0,
+        "signal": "explicit reasoning",
+        "paper": "Burke (2000)",
+        "expected_bias": "Cross-artist editorial connections — human-curated bridges"
+      },
+      {
+        "name": "Contrastive SSL",
+        "key": "contrastive",
+        "dim": 64,
+        "signal": "augmentation-invariant meaning",
+        "paper": "Spijkervet & Burgoyne (2021)",
+        "expected_bias": "Core meaning that survives paraphrasing — robust similarity"
+      }
+    ],
+    "total_embedding_dimensions": 576,
+    "total_songs_covered": 801,
+    "cross_artist_songs": 460,
+    "finding": "The 6 engines span 576 embedding dimensions across 801 songs. The Knowledge Graph is the only engine that can recommend cross-artist songs via explicit reasoning chains, while Transformer Lyrics finds semantic matches across 47 artists. The diversity of approaches ensures that consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
+    "methodology": "Each engine independently ranks all songs by similarity to a seed. Consensus is measured by counting how many engines include a given song in their top-10. High consensus = reliable match. Low consensus but high individual score = serendipitous discovery."
+  },
+  "songwriting_density": {
+    "title": "The Evolution of Songwriting Density: Lyrics Across 19 Years",
+    "hypothesis": "Taylor Swift's songwriting has become more verbose over time, with longer and denser lyrics reflecting her evolution from country radio-format songs to indie folk storytelling.",
+    "data_points": [
+      {
+        "era": "Taylor Swift",
+        "year": 2006,
+        "avg_words": 228,
+        "avg_lines": 1,
+        "max_words": 322,
+        "min_words": 79,
+        "total_songs": 21,
+        "words_std": 65
+      },
+      {
+        "era": "Fearless",
+        "year": 2008,
+        "avg_words": 304,
+        "avg_lines": 1,
+        "max_words": 394,
+        "min_words": 200,
+        "total_songs": 44,
+        "words_std": 51
+      },
+      {
+        "era": "Speak Now",
+        "year": 2010,
+        "avg_words": 352,
+        "avg_lines": 1,
+        "max_words": 477,
+        "min_words": 260,
+        "total_songs": 39,
+        "words_std": 53
+      },
+      {
+        "era": "Red",
+        "year": 2012,
+        "avg_words": 315,
+        "avg_lines": 1,
+        "max_words": 865,
+        "min_words": 143,
+        "total_songs": 79,
+        "words_std": 95
+      },
+      {
+        "era": "1989",
+        "year": 2014,
+        "avg_words": 386,
+        "avg_lines": 1,
+        "max_words": 601,
+        "min_words": 248,
+        "total_songs": 39,
+        "words_std": 99
+      },
+      {
+        "era": "reputation",
+        "year": 2017,
+        "avg_words": 425,
+        "avg_lines": 1,
+        "max_words": 658,
+        "min_words": 330,
+        "total_songs": 15,
+        "words_std": 78
+      },
+      {
+        "era": "Lover",
+        "year": 2019,
+        "avg_words": 326,
+        "avg_lines": 1,
+        "max_words": 453,
+        "min_words": 133,
+        "total_songs": 19,
+        "words_std": 85
+      },
+      {
+        "era": "folklore",
+        "year": 2020,
+        "avg_words": 263,
+        "avg_lines": 1,
+        "max_words": 425,
+        "min_words": 161,
+        "total_songs": 17,
+        "words_std": 69
+      },
+      {
+        "era": "evermore",
+        "year": 2020,
+        "avg_words": 306,
+        "avg_lines": 1,
+        "max_words": 371,
+        "min_words": 192,
+        "total_songs": 17,
+        "words_std": 54
+      },
+      {
+        "era": "Midnights",
+        "year": 2022,
+        "avg_words": 302,
+        "avg_lines": 1,
+        "max_words": 443,
+        "min_words": 203,
+        "total_songs": 24,
+        "words_std": 72
+      },
+      {
+        "era": "The Life Of A Showgirl",
+        "year": 2025,
+        "avg_words": 387,
+        "avg_lines": 52,
+        "max_words": 494,
+        "min_words": 279,
+        "total_songs": 12,
+        "words_std": 63
+      }
+    ],
+    "trend": {
+      "slope": 2.9,
+      "change_per_decade": 29,
+      "r_squared": 0.0968,
+      "direction": "increasing"
+    },
+    "most_verbose_era": {
+      "era": "reputation",
+      "avg_words": 425
+    },
+    "least_verbose_era": {
+      "era": "Taylor Swift",
+      "avg_words": 228
+    },
+    "finding": "Taylor's average word count per song has increased at a rate of approximately 29 words per decade (R²=0.0968). The most verbose era is reputation with 425 words on average, while Taylor Swift averages just 228.",
+    "n_songs": 326
+  }
+}

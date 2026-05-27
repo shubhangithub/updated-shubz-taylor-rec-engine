@@ -1,0 +1,241 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Dancing+Script:wght@400;700&family=Cinzel:wght@400;700;900&family=Oswald:wght@400;600;700&family=Permanent+Marker&family=UnifrakturCook:wght@700&family=Quicksand:wght@400;500;600;700&family=IM+Fell+DW+Pica:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Special+Elite&display=swap');
+
+/* Era-specific font families — closest Google Fonts to actual Taylor Swift album fonts */
+.font-era-debut { font-family: 'Dancing Script', cursive; } /* Satisfaction → handwritten script */
+.font-era-fearless { font-family: 'Dancing Script', cursive; } /* Satisfaction script continues */
+.font-era-speaknow { font-family: 'Dancing Script', cursive; } /* Sudestada → flowing script */
+.font-era-red { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; } /* Tungsten → bold condensed */
+.font-era-1989 { font-family: 'Permanent Marker', cursive; } /* Permanent Marker — exact match */
+.font-era-reputation { font-family: 'UnifrakturCook', cursive; } /* Engravers Old English → blackletter */
+.font-era-lover { font-family: 'Quicksand', sans-serif; } /* Custom script → rounded playful */
+.font-era-folklore { font-family: 'IM Fell DW Pica', serif; font-style: italic; } /* IM Fell DW Pica — exact match */
+.font-era-evermore { font-family: 'IM Fell DW Pica', serif; } /* Same as folklore */
+.font-era-midnights { font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.1em; } /* Neue Haas Grotesk → clean grotesque */
+.font-era-ttpd { font-family: 'Cormorant Garamond', serif; font-style: italic; } /* Big Caslon → literary serif */
+.font-era-showgirl { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.05em; } /* Glamorous, theatrical serif */
+
+:root {
+  --color-primary: #D4AF37;
+  --color-bg: #050505;
+  --color-surface: rgba(255, 255, 255, 0.03);
+  --color-text: #e8e8e8;
+  --color-text-dim: #888888;
+  --color-border: rgba(255, 255, 255, 0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='1.5'%3E%3Cpath d='M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5z'/%3E%3Cpath d='M18 14l1 3.5L22.5 19 19 20l-1 3.5-1-3.5L13.5 19 17 17.5z' opacity='0.6'/%3E%3C/svg%3E") 12 12, auto;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glassmorphic card */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.glow-border {
+  position: relative;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(212,175,55,0.3), rgba(132,50,255,0.2), rgba(50,190,255,0.2), rgba(212,175,55,0.3));
+  background-size: 300% 300%;
+  animation: glow-rotate 4s ease infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.glow-border:hover::after {
+  opacity: 1;
+}
+@keyframes glow-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Holographic tilt effect */
+.holographic {
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 219, 112, 0.1) 45%,
+    rgba(132, 50, 255, 0.1) 50%,
+    rgba(50, 190, 255, 0.1) 55%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+
+.holographic:hover::before {
+  opacity: 1;
+}
+
+/* Shimmer text effect */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Glow effects */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Era-specific background gradients */
+.era-bg-debut { background: radial-gradient(ellipse at center, rgba(139, 115, 85, 0.15) 0%, transparent 70%); }
+.era-bg-fearless { background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.15) 0%, transparent 70%); }
+.era-bg-speaknow { background: radial-gradient(ellipse at center, rgba(123, 45, 142, 0.15) 0%, transparent 70%); }
+.era-bg-red { background: radial-gradient(ellipse at center, rgba(139, 0, 0, 0.15) 0%, transparent 70%); }
+.era-bg-1989 { background: radial-gradient(ellipse at center, rgba(91, 155, 213, 0.15) 0%, transparent 70%); }
+.era-bg-reputation { background: radial-gradient(ellipse at center, rgba(45, 45, 45, 0.3) 0%, transparent 70%); }
+.era-bg-lover { background: radial-gradient(ellipse at center, rgba(255, 105, 180, 0.12) 0%, transparent 70%); }
+.era-bg-folklore { background: radial-gradient(ellipse at center, rgba(112, 128, 144, 0.12) 0%, transparent 70%); }
+.era-bg-evermore { background: radial-gradient(ellipse at center, rgba(139, 105, 20, 0.15) 0%, transparent 70%); }
+.era-bg-midnights { background: radial-gradient(ellipse at center, rgba(25, 25, 112, 0.2) 0%, transparent 70%); }
+.era-bg-ttpd { background: radial-gradient(ellipse at center, rgba(139, 131, 120, 0.12) 0%, transparent 70%); }
+.era-bg-showgirl { background: radial-gradient(ellipse at center, rgba(196, 30, 58, 0.12) 0%, transparent 70%); }
+
+/* Scan line effect */
+.scan-line::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  animation: scan 8s linear infinite;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Beat pulse for song tempo sync */
+@keyframes beat-pulse {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.008); }
+  30% { transform: scale(1); }
+}
+
+/* Particle cursor trail */
+@keyframes particle-fade {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+/* Typography */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Smooth page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Three.js canvas */
+.three-canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .glass {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* Selection color */
+::selection {
+  background: rgba(212, 175, 55, 0.3);
+  color: white;
+}

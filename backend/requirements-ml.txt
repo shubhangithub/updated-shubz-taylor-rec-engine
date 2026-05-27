@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+spotipy
+scikit-learn
+pandas
+numpy
+python-dotenv
+requests
+httpx
+sentence-transformers
+torch
+gensim
+networkx
+openai-whisper
+lyricsgenius

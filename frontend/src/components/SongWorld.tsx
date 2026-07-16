@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SongWithAtmosphere, Song, EditorialBridge } from '@/lib/types';
 import { ERA_THEMES, getEraFontClass } from '@/lib/eraThemes';
-import { ExternalLink, Play, Pause, ChevronRight, Sparkles, BookOpen, Music, X } from 'lucide-react';
+import { ExternalLink, Play, Pause, Sparkles, BookOpen, Music, X } from 'lucide-react';
 
 // Particle system that responds to atmosphere
 function AtmosphereParticles({ atmosphere, colors }: { atmosphere: string; colors: string[] }) {
@@ -897,19 +897,17 @@ export default function SongWorld({ song, recommendations, editorialBridges, onB
               {editorialBridges.slice(0, 4).map((bridge, i) => (
                 <motion.div
                   key={i}
-                  className="glass glass-hover rounded-xl p-4 cursor-pointer transition-all duration-300"
+                  className="glass rounded-xl p-4"
                   style={isPlaying ? { animation: `beat-pulse ${beatDuration}s ease-in-out infinite`, animationDelay: `${beatDuration * 0.25 * i}s` } : undefined}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 + i * 0.1 }}
-                  whileHover={{ scale: 1.02, x: -5 }}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2">
                     <div>
                       <p className="text-sm font-medium text-white/90">{bridge.song}</p>
                       <p className="text-xs text-white/40">{bridge.artist}</p>
                     </div>
-                    <ChevronRight size={14} className="text-white/20 flex-shrink-0 mt-1" />
                   </div>
                   <p className="text-xs text-white/30 mt-2 italic leading-relaxed">
                     &ldquo;{bridge.reason}&rdquo;

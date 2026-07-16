@@ -22,21 +22,30 @@ ERA_ORDER = [
     ("The Life Of A Showgirl", 2025),
 ]
 
+def canonical_era(album: str) -> str:
+    """Map an album string to its canonical era.
+
+    Exact match after stripping "(Taylor's Version)" — substring matching is
+    unsafe here ("Red" is a substring of "The TortuRED Poets Department",
+    which silently folded all TTPD songs into the 2012 Red era).
+    """
+    base = album.lower().replace("(taylor's version)", "").strip()
+    for orig_era, _ in ERA_ORDER:
+        if base == orig_era.lower():
+            return orig_era
+    return album
+
+
 def load_data():
     with open(os.path.join(DATA_DIR, 'taylor_complete.json')) as f:
         songs = json.load(f)
-    # Group by era
+    # Group by era (Taylor's Versions map to the original era)
     era_songs = defaultdict(list)
     for s in songs:
         album = s.get('album', '')
         if not album:
             continue
-        # Normalize era names (Taylor's Versions map to original era)
-        era = album
-        for orig_era, _ in ERA_ORDER:
-            if orig_era.lower() in album.lower():
-                era = orig_era
-                break
+        era = canonical_era(album)
         if s.get('danceability') is not None:
             era_songs[era].append(s)
     return songs, era_songs
@@ -92,8 +101,9 @@ def insight_1_acousticness_ucurve(era_songs):
         "data_points": data_points,
         "regression": regression,
         "pop_peak": {"era": min_point["era"], "year": min_point["year"], "acousticness": min_point["acousticness_mean"]},
-        "finding": f"The data {'confirms' if regression and regression['is_u_shaped'] else 'does not confirm'} a U-shaped curve (R²={regression['r_squared'] if regression else 'N/A'}). The acousticness minimum was during the {min_point['era']} era ({min_point['year']}).",
+        "finding": f"The era means are {'consistent with' if regression and regression['is_u_shaped'] else 'not consistent with'} a U-shaped curve (quadratic fit on {len(data_points)} era means, R²={regression['r_squared'] if regression else 'N/A'} — descriptive, not a significance test). The acousticness minimum was during the {min_point['era']} era ({min_point['year']}).",
         "n_songs": sum(d["song_count"] for d in data_points),
+        "n_eras": len(data_points),
     }
 
 
@@ -123,59 +133,82 @@ def insight_2_valence_vs_sentiment(era_songs):
             "sad_percentage": round(sad_count / max(len(songs), 1) * 100, 1),
         })
 
-    # Correlation between valence and lyrics length
-    if len(data_points) >= 3:
-        valences = [d["valence_mean"] for d in data_points]
-        lyrics_lens = [d["avg_lyrics_length"] for d in data_points]
-        correlation = float(np.corrcoef(valences, lyrics_lens)[0, 1]) if len(valences) > 2 else 0
+    # Song-level correlation between valence and lyric length. The earlier
+    # version correlated 10 era-level means and displayed the r next to the
+    # song count — a 30x sample-size misrepresentation.
+    from scipy import stats
+    song_valences, song_lyric_words = [], []
+    for songs in era_songs.values():
+        for s in songs:
+            if s.get('valence') is not None and s.get('lyrics'):
+                song_valences.append(float(s['valence']))
+                song_lyric_words.append(len(s['lyrics'].split()))
+    if len(song_valences) >= 3:
+        correlation, corr_p = stats.pearsonr(song_valences, song_lyric_words)
+        correlation, corr_p = float(correlation), float(corr_p)
     else:
-        correlation = 0
+        correlation, corr_p = 0.0, 1.0
+    corr_n = len(song_valences)
+    significant = corr_p < 0.05
 
     # Find saddest and happiest eras
     saddest = min(data_points, key=lambda d: d["valence_mean"])
     happiest = max(data_points, key=lambda d: d["valence_mean"])
+
+    if not significant:
+        corr_phrase = "statistically indistinguishable from no relationship"
+    elif correlation < -0.1:
+        corr_phrase = "a modest negative relationship — lower-valence songs tend to have slightly longer lyrics"
+    elif correlation > 0.1:
+        corr_phrase = "a modest positive relationship"
+    else:
+        corr_phrase = "a negligible relationship"
 
     return {
         "title": "Do Sad Songs Sound Sad? Audio Valence Across Taylor's Discography",
         "hypothesis": "Spotify's audio valence (musical positiveness) should track the emotional trajectory of Taylor's albums.",
         "data_points": data_points,
         "valence_lyrics_correlation": round(correlation, 4),
+        "correlation_n": corr_n,
+        "correlation_p": round(corr_p, 4),
         "saddest_era": {"era": saddest["era"], "valence": saddest["valence_mean"], "sad_pct": saddest["sad_percentage"]},
         "happiest_era": {"era": happiest["era"], "valence": happiest["valence_mean"]},
-        "finding": f"The saddest era by audio valence is {saddest['era']} (mean valence {saddest['valence_mean']}), with {saddest['sad_percentage']}% of songs qualifying as 'sad' (valence<0.3, energy<0.4). The correlation between valence and lyrics length is {round(correlation, 2)} — {'moderate negative' if correlation < -0.3 else 'weak' if abs(correlation) < 0.3 else 'moderate positive'}, suggesting {'sadder songs have longer lyrics' if correlation < -0.3 else 'no strong relationship between lyrical length and musical mood'}.",
+        "finding": f"The saddest era by audio valence is {saddest['era']} (mean valence {saddest['valence_mean']}), with {saddest['sad_percentage']}% of songs qualifying as 'sad' (valence<0.3, energy<0.4). Song-level correlation between valence and lyric word count is r={round(correlation, 2)} (n={corr_n}, p={round(corr_p, 3)}) — {corr_phrase}.",
         "n_songs": sum(d["total_songs"] for d in data_points),
     }
 
 
 def insight_3_engine_consensus(era_songs):
-    """When 6 Algorithms Disagree: Engine Architecture Comparison"""
+    """When 7 Algorithms Disagree: Engine Architecture Comparison"""
     engines = [
         {"name": "Transformer Lyrics", "key": "lyrics_transformer", "dim": 384, "signal": "semantic meaning",
          "paper": "Reimers & Gurevych (2019)", "expected_bias": "Lyrical similarity — songs about similar topics"},
+        {"name": "Qwen3 Embeddings", "key": "qwen3_embed", "dim": 1024, "signal": "full-lyrics semantics, 2025 encoder",
+         "paper": "Zhang et al. (2025)", "expected_bias": "Same corpus as Engine 1 through a modern long-context encoder — where they disagree, encoder generation is the variable"},
         {"name": "VAE Latent Space", "key": "vae_latent", "dim": 16, "signal": "compressed semantics",
          "paper": "Kingma & Welling (2013)", "expected_bias": "Non-linear lyrical patterns — narrative arc similarity"},
         {"name": "Graph Node2Vec", "key": "graph_node2vec", "dim": 64, "signal": "structural graph position",
-         "paper": "Grover & Leskovec (2016)", "expected_bias": "Songs connected through shared audio features + era membership"},
-        {"name": "Neural Collaborative", "key": "ncf", "dim": 48, "signal": "multi-modal interaction",
-         "paper": "He et al. (2017)", "expected_bias": "Songs that similar patterns of features + editorial bridges suggest"},
-        {"name": "Knowledge Graph", "key": "knowledge_graph", "dim": 0, "signal": "explicit reasoning",
-         "paper": "Burke (2000)", "expected_bias": "Cross-artist editorial connections — human-curated bridges"},
-        {"name": "Contrastive SSL", "key": "contrastive", "dim": 64, "signal": "augmentation-invariant meaning",
-         "paper": "Spijkervet & Burgoyne (2021)", "expected_bias": "Core meaning that survives paraphrasing — robust similarity"},
+         "paper": "Grover & Leskovec (2016)", "expected_bias": "Songs connected through shared audio features + era membership (Taylor-only graph)"},
+        {"name": "Neural Collaborative", "key": "ncf", "dim": 48, "signal": "multi-modal interaction (synthetic pairs)",
+         "paper": "He et al. (2017), adapted", "expected_bias": "Songs that similar patterns of features + editorial bridges suggest"},
+        {"name": "Hybrid Ensemble", "key": "ensemble", "dim": 0, "signal": "weighted rank aggregation",
+         "paper": "Burke (2002)", "expected_bias": "Consensus across the six embedding engines, enriched with editorial-bridge explanations"},
+        {"name": "Contrastive SSL", "key": "contrastive", "dim": 64, "signal": "augmentation-robust meaning",
+         "paper": "Chen et al. (2020); CLMR-inspired", "expected_bias": "Meaning that survives word dropout and line reordering"},
     ]
 
     # Compute total embedding dimensions
     total_dims = sum(e["dim"] for e in engines)
 
     return {
-        "title": "When 6 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
+        "title": "When 7 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
         "hypothesis": "Different ML architectures capture different aspects of musical similarity. Engines trained on lyrics vs. audio vs. graphs should produce divergent but complementary recommendations.",
         "engines": engines,
         "total_embedding_dimensions": total_dims,
         "total_songs_covered": 801,
         "cross_artist_songs": 460,
-        "finding": f"The 6 engines span {total_dims} embedding dimensions across 801 songs. The Knowledge Graph is the only engine that can recommend cross-artist songs via explicit reasoning chains, while Transformer Lyrics finds semantic matches across 47 artists. The diversity of approaches ensures that consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
-        "methodology": "Each engine independently ranks all songs by similarity to a seed. Consensus is measured by counting how many engines include a given song in their top-10. High consensus = reliable match. Low consensus but high individual score = serendipitous discovery.",
+        "finding": f"The 7 engines span {total_dims} embedding dimensions across 801 songs. Every embedding engine except Graph Node2Vec (whose graph covers the 323 Taylor songs with audio features) recommends across the full 47-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
+        "methodology": "Each engine ranks songs by similarity to a seed; displayed lists are similarity-weighted samples (temperature 0.25) with a cross-artist quota, so they vary between queries. Consensus counts how many engines include a given song in their displayed results. High consensus = reliable match. Low consensus but high individual score = serendipitous discovery.",
     }
 
 
@@ -200,11 +233,7 @@ def insight_4_songwriting_density(all_songs):
             continue
 
         # Map to canonical era
-        era = album
-        for orig_era, _ in ERA_ORDER:
-            if orig_era.lower() in album.lower():
-                era = orig_era
-                break
+        era = canonical_era(album)
 
         word_count = len(lyrics.split())
         line_count = len([l for l in lyrics.split('\n') if l.strip()])
@@ -240,25 +269,21 @@ def insight_4_songwriting_density(all_songs):
             "words_std": round(np.std(word_counts)),
         })
 
-    # Trend: linear regression on avg_words over years
+    # Trend: linear regression on avg_words over years, with significance
     if len(data_points) >= 3:
+        from scipy import stats
         years = np.array([d["year"] for d in data_points])
         words = np.array([d["avg_words"] for d in data_points])
-        slope, intercept = np.polyfit(years, words, 1)
-        # Predicted change per decade
-        change_per_decade = slope * 10
-
-        # R^2
-        predicted = slope * years + intercept
-        ss_res = np.sum((words - predicted) ** 2)
-        ss_tot = np.sum((words - words.mean()) ** 2)
-        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+        reg = stats.linregress(years, words)
+        change_per_decade = reg.slope * 10
 
         trend = {
-            "slope": round(float(slope), 2),
+            "slope": round(float(reg.slope), 2),
             "change_per_decade": round(float(change_per_decade)),
-            "r_squared": round(float(r_squared), 4),
-            "direction": "increasing" if slope > 0 else "decreasing",
+            "r_squared": round(float(reg.rvalue ** 2), 4),
+            "p_value": round(float(reg.pvalue), 4),
+            "significant": bool(reg.pvalue < 0.05),
+            "direction": "increasing" if reg.slope > 0 else "decreasing",
         }
     else:
         trend = None
@@ -274,7 +299,13 @@ def insight_4_songwriting_density(all_songs):
         "trend": trend,
         "most_verbose_era": {"era": most_verbose["era"], "avg_words": most_verbose["avg_words"]},
         "least_verbose_era": {"era": least_verbose["era"], "avg_words": least_verbose["avg_words"]},
-        "finding": f"Taylor's average word count per song {'has increased' if trend and trend['direction'] == 'increasing' else 'has decreased'} at a rate of approximately {abs(trend['change_per_decade']) if trend else '?'} words per decade (R²={trend['r_squared'] if trend else 'N/A'}). The most verbose era is {most_verbose['era']} with {most_verbose['avg_words']} words on average, while {least_verbose['era']} averages just {least_verbose['avg_words']}.",
+        "finding": (
+            f"Taylor's average word count per song shows a "
+            f"{'statistically significant' if trend and trend['significant'] else 'weak, statistically non-significant'} "
+            f"{trend['direction'] if trend else '?'} drift of ~{abs(trend['change_per_decade']) if trend else '?'} words per decade "
+            f"(R²={trend['r_squared'] if trend else 'N/A'}, p={trend['p_value'] if trend else 'N/A'}, n={len(data_points)} era means). "
+            f"The most verbose era is {most_verbose['era']} with {most_verbose['avg_words']} words on average, while {least_verbose['era']} averages just {least_verbose['avg_words']}."
+        ),
         "n_songs": sum(d["total_songs"] for d in data_points),
     }
 

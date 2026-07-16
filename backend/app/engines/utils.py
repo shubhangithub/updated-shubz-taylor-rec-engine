@@ -2,6 +2,27 @@
 from typing import List, Dict
 
 
+def resolve_seed_indices(song_names: List[str], index: List[Dict]) -> List[int]:
+    """Resolve seed song names to index positions.
+
+    Several titles exist for more than one artist (e.g. Taylor's "ivy" vs
+    Frank Ocean's "Ivy"). A naive {name: i} dict comprehension lets the LAST
+    occurrence win — and cross-artist entries come after Taylor's in every
+    index — so seeds silently resolved to the wrong artist's embedding.
+    Seeds arrive as bare names from the Taylor-centric UI, so on a name
+    collision the Taylor Swift entry wins; otherwise first occurrence.
+    """
+    by_name: Dict[str, int] = {}
+    for i, e in enumerate(index):
+        name = e['name'].lower()
+        if name not in by_name:
+            by_name[name] = i
+        elif (index[by_name[name]].get('artist') != 'Taylor Swift'
+              and e.get('artist') == 'Taylor Swift'):
+            by_name[name] = i
+    return [by_name[n.lower()] for n in song_names if n.lower() in by_name]
+
+
 def diversify_results(results: List[Dict], temperature: float = 0.3) -> List[Dict]:
     """
     Add stochastic diversity to ranked results.

@@ -503,7 +503,7 @@ def run_engine_endpoint(engine_key: str, request: CompareRequest):
 
 @app.post("/api/compare")
 def compare_engines(request: CompareRequest):
-    """Run all 5 ML recommendation engines on the same seed songs."""
+    """Run all registered ML recommendation engines on the same seed songs."""
     try:
         from app.rec_engines import ENGINES, run_engine
 

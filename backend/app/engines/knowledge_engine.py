@@ -1,4 +1,10 @@
-"""Runtime engine for Knowledge Graph with multi-hop reasoning."""
+"""Knowledge Graph lookup over precomputed 1-3 hop editorial-bridge paths.
+
+NOT REGISTERED as a live engine: the Hybrid Ensemble replaced it in
+rec_engines.py. Kept because it serves ml_data/knowledge_graph.json
+(built by ml/build_knowledge_graph.py) if re-registered. Despite the old
+module name, nothing reasons at runtime — recommendations are precomputed
+fixed-depth graph traversals with hard-coded per-hop confidence tiers."""
 import json
 import os
 from typing import List, Dict

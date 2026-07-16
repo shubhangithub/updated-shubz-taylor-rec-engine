@@ -43,17 +43,8 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
     if _embeddings is None or len(_embeddings) == 0 or not _index:
         return []
 
-    # Find seed indices by name (case-insensitive)
-    name_map = {}
-    for i, entry in enumerate(_index):
-        name_map[entry['name'].lower()] = i
-
-    seed_indices = []
-    for name in song_names:
-        idx = name_map.get(name.lower())
-        if idx is not None:
-            seed_indices.append(idx)
-
+    from app.engines.utils import resolve_seed_indices
+    seed_indices = resolve_seed_indices(song_names, _index)
     if not seed_indices:
         return []
 
@@ -77,17 +68,18 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
         if idx in seed_indices:
             continue
         entry = _index[idx]
-        # Deduplicate by name
-        if entry['name'].lower() in seen_names:
+        # Deduplicate by (name, artist) — same-titled songs by different artists are distinct
+        dedup_key = (entry['name'].lower(), entry.get('artist', 'Taylor Swift').lower())
+        if dedup_key in seen_names:
             continue
-        seen_names.add(entry['name'].lower())
+        seen_names.add(dedup_key)
 
         results.append({
             'name': entry['name'],
             'artist': entry.get('artist', 'Taylor Swift'),
             'similarity': round(float(sims[idx]), 4),
             'recommendation_type': 'lyrics_transformer',
-            'explanation': f"Semantic lyrics similarity: {round(float(sims[idx])*100)}% meaning overlap (384-dim BERT embedding)",
+            'explanation': f"Semantic lyrics similarity: cosine {round(float(sims[idx]), 2)} ({_embeddings.shape[1]}-dim MiniLM sentence embedding)",
         })
         if len(results) >= limit * 3:  # Collect extra for interleaving
             break

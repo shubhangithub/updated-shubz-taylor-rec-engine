@@ -13,7 +13,7 @@ interface RecEngineProps {
   onSongClick: (songName: string) => void;
 }
 
-type RecMode = 'lyrics_transformer' | 'vae_latent' | 'graph_node2vec' | 'ncf' | 'ensemble' | 'contrastive';
+type RecMode = 'lyrics_transformer' | 'qwen3_embed' | 'vae_latent' | 'graph_node2vec' | 'ncf' | 'ensemble' | 'contrastive';
 
 interface RecResult {
   name: string;
@@ -38,16 +38,24 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     label: 'Transformer Lyrics',
     icon: <Zap size={16} />,
     color: '#E53E3E',
-    description: '384-dim BERT semantic embeddings',
-    longDesc: 'Encodes all 341 song lyrics into 384-dimensional semantic vectors using all-MiniLM-L6-v2 (Sentence-BERT). Finds songs with similar meaning — "heartbreak in autumn" matches even with no shared words. Paper: Reimers & Gurevych (2019) Sentence-BERT, EMNLP.',
+    description: '384-dim semantic lyric embeddings',
+    longDesc: 'Encodes all 801 song lyrics (341 Taylor + 460 cross-artist) into 384-dimensional semantic vectors using all-MiniLM-L6-v2 (sentence-transformers). Finds songs with similar meaning — "heartbreak in autumn" matches even with no shared words. Paper: Reimers & Gurevych (2019) Sentence-BERT, EMNLP.',
+  },
+  {
+    key: 'qwen3_embed',
+    label: 'Qwen3 Embeddings',
+    icon: <Zap size={16} />,
+    color: '#38B2AC',
+    description: '1024-dim modern lyric embeddings',
+    longDesc: 'The 2025-era counterpart to Transformer Lyrics: Qwen3-Embedding-0.6B encodes the FULL lyrics of all 801 songs (32K-token context — MiniLM truncates at 256 wordpieces, so it never sees bridges or outros). Same corpus, six years of encoder progress, side by side. Paper: Zhang et al. (2025) Qwen3 Embedding, arXiv:2506.05176.',
   },
   {
     key: 'vae_latent',
     label: 'VAE Latent Space',
     icon: <Sparkles size={16} />,
     color: '#9F7AEA',
-    description: '8-dim learned audio latent space',
-    longDesc: 'A Variational Autoencoder trained on 9 audio features learns an 8-dimensional compressed latent space where songs cluster by non-linear relationships cosine similarity misses. Encoder: 9→32→16→8. Trained with reconstruction + KL divergence loss. Paper: Roberts et al. (2017) Hierarchical VAEs for Music, NIPS.',
+    description: '16-dim learned lyrics latent space',
+    longDesc: 'A Variational Autoencoder trained on the 384-dim lyrics embeddings learns a 16-dimensional latent space (24:1 compression) where songs cluster by non-linear structure cosine similarity misses. Encoder: 384→128→64→16, β=0.1 with KL warm-up to avoid posterior collapse. Paper: Kingma & Welling (2013) Auto-Encoding Variational Bayes, ICLR 2014.',
   },
   {
     key: 'graph_node2vec',
@@ -55,31 +63,31 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     icon: <Users size={16} />,
     color: '#48BB78',
     description: '64-dim graph structural embeddings',
-    longDesc: 'Builds a song similarity graph (323 nodes, feature/era/bridge edges), runs biased random walks (p=1, q=2), trains Word2Vec on walks to learn 64-dim structural embeddings. Captures multi-hop: "Song A → Song B → Song C" transitive similarity. Paper: Grover & Leskovec (2016) node2vec, KDD.',
+    longDesc: 'Builds a sparse song graph (323 nodes; audio-similarity, era, and editorial-bridge edges), runs second-order biased random walks (p=1, q=2), trains skip-gram Word2Vec on walks to learn 64-dim structural embeddings. Captures multi-hop: "Song A → Song B → Song C" transitive similarity. Paper: Grover & Leskovec (2016) node2vec, KDD.',
   },
   {
     key: 'ncf',
     label: 'Neural Collaborative',
     icon: <BookOpen size={16} />,
     color: '#5B9BD5',
-    description: '32-dim MLP interaction embeddings',
-    longDesc: 'Trains a neural network (MLP) on synthetic song interactions derived from editorial bridges, era co-occurrence, and feature similarity. Learns 32-dim embeddings that encode collaborative patterns. Negative sampling ensures the model distinguishes similar from dissimilar. Paper: He et al. (2017) Neural Collaborative Filtering, WWW.',
+    description: '48-dim MLP interaction embeddings',
+    longDesc: 'Adapts the MLP interaction function of Neural Collaborative Filtering to song-song pairs — no real users or listening data. 48-dim embeddings are PCA-initialized from 393-dim multi-modal features (384 lyrics + 9 audio) and fine-tuned on ~5,000 synthetic pairs from lyrics similarity, audio similarity, and editorial bridges. Paper: He et al. (2017) NCF, WWW (adapted).',
   },
   {
     key: 'ensemble',
     label: 'Hybrid Ensemble',
     icon: <BookOpen size={16} />,
     color: '#ED8936',
-    description: 'Weighted blend of all 5 engines',
-    longDesc: 'Runs all 5 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Truly dynamic — different results each query. Based on Burke (2002) hybrid recommender architecture.',
+    description: 'Weighted blend of all 6 embedding engines',
+    longDesc: 'Runs all 6 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Truly dynamic — different results each query. Based on Burke (2002) hybrid recommender architecture.',
   },
   {
     key: 'contrastive',
     label: 'Contrastive SSL',
     icon: <Sparkles size={16} />,
     color: '#F687B3',
-    description: '64-dim SimCLR on augmented lyrics',
-    longDesc: 'Adapts SimCLR contrastive learning to lyrics: creates augmented views (20% word dropout, sentence shuffle, section removal), trains a projection head (384→128→64) with NT-Xent InfoNCE loss (τ=0.07). Learns representations INVARIANT to surface-level changes — captures what makes a song\'s meaning stable. Paper: Spijkervet & Burgoyne (2021) CLMR, ISMIR + Chen et al. (2020) SimCLR, ICML.',
+    description: '64-dim SimCLR-style on augmented lyrics',
+    longDesc: 'Applies the SimCLR recipe to lyrics with a frozen MiniLM encoder: creates augmented views (20% word dropout, line shuffle, section removal), trains a projection head (384→128→64) with NT-Xent InfoNCE loss (τ=0.07). Learns representations robust to word dropout and line reordering. Paper: Chen et al. (2020) SimCLR, ICML — inspired by Spijkervet & Burgoyne (2021) CLMR, ISMIR.',
   },
 ];
 

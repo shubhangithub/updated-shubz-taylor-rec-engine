@@ -78,7 +78,7 @@ export default function Insights() {
         >
           <p className="text-[10px] tracking-[0.2em] uppercase text-white/25 mb-2">Methodology</p>
           <p className="text-xs text-white/30 leading-relaxed">
-            All audio features are from Spotify&apos;s official API (danceability, energy, valence, acousticness, speechiness, instrumentalness, liveness, tempo, loudness). Statistics computed across {data.acousticness_ucurve?.n_songs || 323} songs spanning 12 studio albums (2006-2025). Regression analysis uses numpy polyfit. Lyrics analysis uses 341 Whisper-synchronized songs with 11,689 timestamped lyric lines.
+            All audio features are from Spotify&apos;s official API (danceability, energy, valence, acousticness, speechiness, instrumentalness, liveness, tempo, loudness). Audio statistics cover {data.acousticness_ucurve?.n_songs || 317} album songs across 11 of 12 studio-album eras (2006–2024; The Life Of A Showgirl lacks Spotify audio features). Era-level regressions use scipy on era means and are descriptive; song-level correlations report n and p. Lyric-density statistics use raw lyric word counts; the 341 Whisper-synchronized songs power the karaoke view.
           </p>
         </motion.div>
       </div>
@@ -172,9 +172,9 @@ function InsightPost({ insight, icon, color, isExpanded, onToggle }: {
               {/* Stats row */}
               <div className="flex flex-wrap gap-4 text-xs text-white/20">
                 {insight.n_songs && <span>n = {insight.n_songs} songs</span>}
-                {insight.regression?.r_squared && <span>R² = {insight.regression.r_squared}</span>}
-                {insight.trend?.r_squared && <span>R² = {insight.trend.r_squared}</span>}
-                {insight.valence_lyrics_correlation && <span>r = {insight.valence_lyrics_correlation}</span>}
+                {insight.regression?.r_squared && <span>R² = {insight.regression.r_squared} ({insight.n_eras || insight.data_points?.length} era means, descriptive)</span>}
+                {insight.trend?.r_squared && <span>R² = {insight.trend.r_squared}{insight.trend.p_value !== undefined ? `, p = ${insight.trend.p_value}` : ''}</span>}
+                {insight.valence_lyrics_correlation && <span>r = {insight.valence_lyrics_correlation}{insight.correlation_n ? ` (n = ${insight.correlation_n}, p = ${insight.correlation_p})` : ''}</span>}
               </div>
             </div>
           </motion.div>

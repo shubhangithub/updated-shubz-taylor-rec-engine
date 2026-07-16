@@ -14,6 +14,7 @@ interface ComparisonGridProps {
 
 const ENGINE_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   'lyrics_transformer': { label: 'Transformer Lyrics', color: '#E53E3E', icon: <Zap size={16} /> },
+  'qwen3_embed': { label: 'Qwen3 Embeddings', color: '#38B2AC', icon: <Zap size={16} /> },
   'vae_latent': { label: 'VAE Latent', color: '#9F7AEA', icon: <Sparkles size={16} /> },
   'graph_node2vec': { label: 'Graph Node2Vec', color: '#48BB78', icon: <Users size={16} /> },
   'ncf': { label: 'Neural Collab', color: '#5B9BD5', icon: <BookOpen size={16} /> },
@@ -21,7 +22,7 @@ const ENGINE_META: Record<string, { label: string; color: string; icon: React.Re
   'contrastive': { label: 'Contrastive SSL', color: '#F687B3', icon: <Sparkles size={16} /> },
 };
 
-const ENGINE_ORDER = ['lyrics_transformer', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
+const ENGINE_ORDER = ['lyrics_transformer', 'qwen3_embed', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
 
 export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProps) {
   const overlapMap = useMemo(() => {
@@ -131,7 +132,7 @@ export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProp
                         style={overlap >= 4 ? { boxShadow: '0 0 8px #D4AF3740' } : {}}
                       >
                         <Award size={8} className="text-[#D4AF37]" />
-                        <span className="text-[8px] text-[#D4AF37] font-mono">{overlap}/6</span>
+                        <span className="text-[8px] text-[#D4AF37] font-mono">{overlap}/7</span>
                       </motion.div>
                     )}
                     <ExplainabilityCard
@@ -180,7 +181,7 @@ export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProp
                     transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.6 + i * 0.04 }}
                     onClick={() => onSongClick(name)}
                   >
-                    {name} <span className="text-[#D4AF37] font-mono ml-1">{engines.length}/6</span>
+                    {name} <span className="text-[#D4AF37] font-mono ml-1">{engines.length}/7</span>
                   </motion.span>
                 );
               })}

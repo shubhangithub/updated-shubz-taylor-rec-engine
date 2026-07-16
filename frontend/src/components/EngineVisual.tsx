@@ -75,7 +75,7 @@ export default function EngineVisual({ onClick }: EngineVisualProps) {
 
           {[0, 1, 2].map(i => {
             const y = 120 + i * 80;
-            const labels = ['Audio Features', 'User Selection', 'Song Metadata'];
+            const labels = ['Audio Features', 'Seed Songs', 'Song Metadata'];
             const icons = ['♪', '♥', '◈'];
             return (
               <g key={`input-${i}`}>
@@ -211,8 +211,8 @@ export default function EngineVisual({ onClick }: EngineVisualProps) {
           <g>
             <rect x={280} y={380} width={140} height={50} rx={6}
               fill="rgba(255,255,255,0.02)" stroke="rgba(72,187,120,0.3)" strokeWidth={1} />
-            <text x={350} y={400} fill="rgba(72,187,120,0.6)" fontSize={9} fontFamily="Inter, sans-serif" textAnchor="middle">Collaborative</text>
-            <text x={350} y={414} fill="rgba(72,187,120,0.4)" fontSize={8} fontFamily="JetBrains Mono, monospace" textAnchor="middle">Filtering</text>
+            <text x={350} y={400} fill="rgba(72,187,120,0.6)" fontSize={9} fontFamily="Inter, sans-serif" textAnchor="middle">Neural Song-Pair</text>
+            <text x={350} y={414} fill="rgba(72,187,120,0.4)" fontSize={8} fontFamily="JetBrains Mono, monospace" textAnchor="middle">(NCF-style, synthetic pairs)</text>
             <line x1={350} y1={380} x2={350} y2={340} stroke="rgba(72,187,120,0.15)" strokeWidth={1} strokeDasharray="4 4" />
           </g>
 

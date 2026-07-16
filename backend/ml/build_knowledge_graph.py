@@ -79,15 +79,18 @@ def main():
         n1 = f"artist:{a1}"
         n2 = f"artist:{a2}"
         if n1 in G and n2 in G:
-            G.add_edge(n1, n2, relation="co_bridges",
-                      reason=f"Both connected via {', '.join(shared_songs[:3])}", weight=0.4)
+            # G is a DiGraph and the 3-hop pass follows out_edges only, so the
+            # co-bridge relation must be added in both directions to be mutual.
+            reason = f"Both connected via {', '.join(shared_songs[:3])}"
+            G.add_edge(n1, n2, relation="co_bridges", reason=reason, weight=0.4)
+            G.add_edge(n2, n1, relation="co_bridges", reason=reason, weight=0.4)
 
     print(f"Knowledge graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
 
     # Pre-compute recommendations for each Taylor song
     # 1-hop: direct bridges
     # 2-hop: Taylor song -> Artist -> other songs by that artist in the graph
-    # 3-hop: Taylor song -> bridge song -> artist -> co-bridged artist -> their songs
+    # 3-hop: Taylor song -> era-connected artist -> co-bridged artist -> their songs
 
     recommendations = {}
 

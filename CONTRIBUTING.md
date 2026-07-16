@@ -7,8 +7,8 @@ Welcome. Whether you want to add a new recommendation engine, expand the artist 
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/shubz-taylor-rec-engine.git
-   cd shubz-taylor-rec-engine
+   git clone https://github.com/YOUR_USERNAME/updated-shubz-taylor-rec-engine.git
+   cd updated-shubz-taylor-rec-engine
    ```
 3. Create a branch from `main`:
    ```bash
@@ -40,10 +40,13 @@ This is the most impactful contribution. Each engine should implement a real, pu
 3. **Register the engine** in `backend/app/rec_engines.py`
    - Use the `register_engine()` pattern to add your engine to the registry
 
-4. **Add to the frontend** (three files):
+4. **Add to the frontend** (four files):
    - `frontend/src/components/RecEngine.tsx` — Add to the `RecMode` type and `REC_MODES` array
    - `frontend/src/components/ComparisonGrid.tsx` — Add to `ENGINE_META` and `ENGINE_ORDER`, update the overlap badge denominator
-   - `frontend/src/components/HowItWorks.tsx` — Add a `Section` entry with your paper reference in the `PAPERS` dict and the `sections` array
+   - `frontend/src/components/AgreementHeatmap.tsx` — Add to `ENGINE_META` and `ENGINE_ORDER`, update the agreement-count denominator
+   - `frontend/src/components/HowItWorks.tsx` — Add a `Section` entry with your paper reference in the `PAPERS` dict and the `sections` array, and update the mind map / stats card
+
+If your engine adapts a paper rather than implementing it (different data regime, frozen components, synthetic supervision), say so explicitly in every description — this repo labels adaptations honestly.
 
 ### Add a New Taylor Swift Era
 
@@ -73,7 +76,10 @@ The engine discovers connections between Taylor and other artists through shared
    ```bash
    python -m ml.compute_lyrics_embeddings
    ```
-4. Optionally re-train downstream engines (VAE, NCF, Contrastive) that depend on the full corpus
+4. Optionally re-train downstream engines (VAE, NCF, Contrastive, Qwen3) that depend on the full corpus:
+   ```bash
+   python -m ml.train_vae && python -m ml.train_ncf && python -m ml.train_contrastive && python -m ml.compute_qwen3_embeddings
+   ```
 
 ### Add Editorial Bridges
 
@@ -133,4 +139,4 @@ The aesthetic is dark, luminous, and immersive. When contributing visual changes
 
 ## Questions?
 
-Open an [issue](https://github.com/shubhangithub/shubz-taylor-rec-engine/issues). We are happy to help you find the right place to contribute.
+Open an [issue](https://github.com/shubhangithub/updated-shubz-taylor-rec-engine/issues). We are happy to help you find the right place to contribute.

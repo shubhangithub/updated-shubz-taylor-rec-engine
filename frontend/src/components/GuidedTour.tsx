@@ -42,8 +42,8 @@ const TOUR_STEPS: TourStep[] = [
     duration: 5000,
   },
   {
-    narration: '6 ML Recommendation Engines',
-    subtext: 'Transformer BERT, VAE, Node2Vec, Neural Collaborative, Knowledge Graph, Contrastive SSL',
+    narration: '7 ML Recommendation Engines',
+    subtext: 'Transformer Lyrics, Qwen3 Embeddings, VAE, Node2Vec, Neural Collaborative, Hybrid Ensemble, Contrastive SSL',
     action: (props) => props.navigateTo('recommend'),
     duration: 5000,
   },

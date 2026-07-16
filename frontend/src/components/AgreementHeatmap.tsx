@@ -11,14 +11,15 @@ interface AgreementHeatmapProps {
 
 const ENGINE_META: Record<string, { label: string; color: string }> = {
   'lyrics_transformer': { label: 'Transformer Lyrics', color: '#E53E3E' },
+  'qwen3_embed': { label: 'Qwen3 Embeddings', color: '#38B2AC' },
   'vae_latent': { label: 'VAE Latent', color: '#9F7AEA' },
   'graph_node2vec': { label: 'Graph Node2Vec', color: '#48BB78' },
   'ncf': { label: 'Neural Collab', color: '#5B9BD5' },
-  'knowledge_graph': { label: 'Knowledge Graph', color: '#ED8936' },
+  'ensemble': { label: 'Hybrid Ensemble', color: '#ED8936' },
   'contrastive': { label: 'Contrastive SSL', color: '#F687B3' },
 };
 
-const ENGINE_ORDER = ['lyrics_transformer', 'vae_latent', 'graph_node2vec', 'ncf', 'knowledge_graph', 'contrastive'];
+const ENGINE_ORDER = ['lyrics_transformer', 'qwen3_embed', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
 
 interface SongColumn {
   key: string;
@@ -229,7 +230,7 @@ export default function AgreementHeatmap({ data, onSongClick }: AgreementHeatmap
             >
               {col.name}{' '}
               <span className="text-[#D4AF37] font-mono ml-1">
-                {col.agreementCount}/6
+                {col.agreementCount}/7
               </span>
             </motion.button>
           ))}

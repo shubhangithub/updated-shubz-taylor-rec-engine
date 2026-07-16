@@ -1,16 +1,24 @@
 """
-Engine 6: Contrastive Self-Supervised Learning (SimCLR/CLMR-inspired)
+Engine 6: Contrastive Self-Supervised Learning (SimCLR-style, on lyrics)
 
-Adapts SimCLR framework to song lyrics:
-1. Start from pre-computed BERT embeddings (384-dim)
-2. Create augmented views via lyrics perturbation (word dropout, sentence shuffle)
-3. Re-encode augmented views through BERT
-4. Train projection head with NT-Xent (InfoNCE) contrastive loss
-5. Learned 64-dim representations capture what's INVARIANT about a song's meaning
+Adapts the SimCLR recipe to song lyrics, with one major simplification:
+the encoder (all-MiniLM-L6-v2) stays FROZEN and only a projection head is
+trained. Pipeline:
+1. Start from pre-computed MiniLM sentence embeddings (384-dim)
+2. Create augmented views via lyrics perturbation (word dropout, line shuffle,
+   section-header removal) and re-encode them with the same frozen encoder
+3. Train a projection head with NT-Xent (InfoNCE) contrastive loss
+4. Serve the 64-dim POST-projection space (a deliberate deviation from
+   SimCLR, whose transfer results favor pre-projection features — the
+   pre-projection space here is already served by Engine 1)
 
 Papers:
-- Spijkervet & Burgoyne (2021) "Contrastive Learning of Musical Representations", ISMIR
-- Chen et al. (2020) "SimCLR", ICML
+- Chen et al. (2020) "A Simple Framework for Contrastive Learning of Visual
+  Representations" (SimCLR), ICML — the implemented recipe (NT-Xent,
+  projection head, augmentation-defined invariance)
+- Spijkervet & Burgoyne (2021) "Contrastive Learning of Musical
+  Representations" (CLMR), ISMIR — inspiration only: CLMR trains a SampleCNN
+  end-to-end on raw audio waveforms, which this text-only pipeline does not do
 
 Run once: cd backend && python -m ml.train_contrastive
 """
@@ -149,8 +157,8 @@ def main():
     # Create augmented views and encode them through BERT
     print("Creating augmented lyrics views and encoding...", flush=True)
     from sentence_transformers import SentenceTransformer
-    model_path = os.path.expanduser('~/.cache/hf_manual')
-    bert = SentenceTransformer(model_path, device='cpu')
+    # Must be the same encoder that produced lyrics_embeddings.npy
+    bert = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
 
     aug_lyrics_1 = []
     aug_lyrics_2 = []

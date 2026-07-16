@@ -124,6 +124,9 @@ export interface ExplainableResult {
   era_connection?: string;
   feature_breakdown?: Record<string, FeatureBreakdown>;
   top_factors?: string[];
+  explanation?: string;
+  engine_count?: number;
+  engines_used?: string[];
 }
 
 export interface CompareResponse {

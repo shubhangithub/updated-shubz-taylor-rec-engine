@@ -1,7 +1,12 @@
 """
-Engine 2: Variational Autoencoder for audio feature latent space.
-Learns compressed representations where non-linear feature relationships are captured.
-Run once: python -m ml.train_vae
+Engine 2: Variational Autoencoder over lyrics embeddings.
+Compresses the 384-dim Sentence-BERT lyrics embeddings (Engine 1 output)
+into a 16-dim latent space (24:1 compression) with a beta-weighted VAE
+(Kingma & Welling, 2013/ICLR 2014). Encoder 384->128->64->(mu,logvar 16),
+beta=0.1 for reconstruction-favoring regularization.
+
+Requires ml_data/lyrics_embeddings.npy — run ml.compute_lyrics_embeddings first.
+Run once: cd backend && python -m ml.train_vae
 """
 import json
 import numpy as np
@@ -11,35 +16,34 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'app')
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ml_data')
 
-FEATURE_KEYS = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness',
-                'instrumentalness', 'liveness', 'valence', 'tempo']
+BETA = 0.1  # KL weight: low, favors reconstruction (see HowItWorks "The Math")
+WARMUP_EPOCHS = 50  # anneal KL 0 -> BETA to prevent posterior collapse
+EPOCHS = 300
+LATENT_DIM = 16
 
-class MusicVAE(nn.Module):
-    def __init__(self, input_dim=9, hidden_dim=32, latent_dim=8):
+
+class LyricsVAE(nn.Module):
+    def __init__(self, input_dim=384, latent_dim=LATENT_DIM):
         super().__init__()
-        # Encoder
+        # Encoder: 384 -> 128 -> 64 -> (mu, logvar)
         self.encoder = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
+            nn.Linear(input_dim, 128),
             nn.ReLU(),
-            nn.BatchNorm1d(hidden_dim),
-            nn.Linear(hidden_dim, 16),
+            nn.Linear(128, 64),
             nn.ReLU(),
         )
-        self.fc_mu = nn.Linear(16, latent_dim)
-        self.fc_logvar = nn.Linear(16, latent_dim)
+        self.fc_mu = nn.Linear(64, latent_dim)
+        self.fc_logvar = nn.Linear(64, latent_dim)
 
-        # Decoder
+        # Decoder: latent -> 64 -> 128 -> 384 (linear output; embeddings are unbounded)
         self.decoder = nn.Sequential(
-            nn.Linear(latent_dim, 16),
+            nn.Linear(latent_dim, 64),
             nn.ReLU(),
-            nn.BatchNorm1d(16),
-            nn.Linear(16, hidden_dim),
+            nn.Linear(64, 128),
             nn.ReLU(),
-            nn.Linear(hidden_dim, input_dim),
-            nn.Sigmoid(),
+            nn.Linear(128, input_dim),
         )
 
     def encode(self, x):
@@ -60,57 +64,53 @@ class MusicVAE(nn.Module):
         recon = self.decode(z)
         return recon, mu, logvar
 
-def vae_loss(recon, x, mu, logvar):
+
+def vae_loss(recon, x, mu, logvar, beta=BETA):
     recon_loss = nn.functional.mse_loss(recon, x, reduction='sum')
     kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    return recon_loss + kl_loss
+    return recon_loss + beta * kl_loss
+
 
 def main():
-    with open(os.path.join(DATA_DIR, 'taylor_complete.json'), 'r') as f:
-        songs = json.load(f)
+    torch.manual_seed(42)
 
-    # Extract features
-    names = []
-    features = []
-    for s in songs:
-        if all(s.get(k) is not None for k in FEATURE_KEYS):
-            row = []
-            for k in FEATURE_KEYS:
-                val = float(s[k])
-                # Normalize loudness (-60,0) -> (0,1) and tempo (50,200) -> (0,1)
-                if k == 'loudness':
-                    val = (val + 60) / 60
-                elif k == 'tempo':
-                    val = (val - 50) / 150
-                row.append(max(0, min(1, val)))
-            features.append(row)
-            names.append(s.get('name', ''))
+    emb_path = os.path.join(OUT_DIR, 'lyrics_embeddings.npy')
+    idx_path = os.path.join(OUT_DIR, 'lyrics_index.json')
+    if not os.path.exists(emb_path):
+        raise SystemExit("lyrics_embeddings.npy not found — run: python -m ml.compute_lyrics_embeddings")
 
-    X = np.array(features, dtype=np.float32)
-    print(f"Training VAE on {X.shape[0]} songs with {X.shape[1]} features")
+    X = np.load(emb_path).astype(np.float32)
+    with open(idx_path) as f:
+        index = json.load(f)
+
+    # z-score each embedding dimension: raw MiniLM components are ~1/sqrt(384),
+    # so an unscaled reconstruction term is dwarfed by the KL term and the
+    # posterior collapses (all latents -> prior mean, no structure).
+    X = (X - X.mean(axis=0)) / np.clip(X.std(axis=0), 1e-8, None)
+
+    print(f"Training VAE on {X.shape[0]} songs x {X.shape[1]}-dim lyrics embeddings")
 
     dataset = TensorDataset(torch.FloatTensor(X))
-    loader = DataLoader(dataset, batch_size=32, shuffle=True)
+    loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
-    model = MusicVAE(input_dim=9, hidden_dim=32, latent_dim=8)
+    model = LyricsVAE(input_dim=X.shape[1], latent_dim=LATENT_DIM)
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-    # Train
     model.train()
-    for epoch in range(500):
+    for epoch in range(EPOCHS):
+        beta = BETA * min(1.0, (epoch + 1) / WARMUP_EPOCHS)  # KL warm-up
         total_loss = 0
-        for batch in loader:
-            x = batch[0]
+        for (x,) in loader:
             optimizer.zero_grad()
             recon, mu, logvar = model(x)
-            loss = vae_loss(recon, x, mu, logvar)
+            loss = vae_loss(recon, x, mu, logvar, beta=beta)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        if (epoch + 1) % 100 == 0:
-            print(f"  Epoch {epoch+1}/500, Loss: {total_loss/len(X):.4f}")
+        if (epoch + 1) % 50 == 0:
+            print(f"  Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/len(X):.4f}")
 
-    # Extract latent vectors
+    # Latent vectors = posterior means
     model.eval()
     with torch.no_grad():
         mu, _ = model.encode(torch.FloatTensor(X))
@@ -119,12 +119,11 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     np.save(os.path.join(OUT_DIR, 'vae_latents.npy'), latents.astype(np.float32))
     with open(os.path.join(OUT_DIR, 'vae_index.json'), 'w') as f:
-        json.dump(names, f)
-
-    # Save model
+        json.dump(index, f)
     torch.save(model.state_dict(), os.path.join(OUT_DIR, 'vae_model.pt'))
 
-    print(f"Saved {latents.shape} latent vectors to ml_data/")
+    print(f"Saved {latents.shape} latent vectors to ml_data/ ({X.shape[1]}:{LATENT_DIM} = 24:1 compression)")
+
 
 if __name__ == '__main__':
     main()

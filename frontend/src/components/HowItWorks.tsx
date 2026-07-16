@@ -7,7 +7,7 @@ import EngineVisual from './EngineVisual';
 import { getEngineStats } from '@/lib/api';
 import { EngineStats } from '@/lib/types';
 
-type Section = 'engine-1-transformer' | 'engine-2-vae' | 'engine-3-node2vec' | 'engine-4-ncf' | 'engine-5-ensemble' | 'engine-6-contrastive' | 'engine-7-qwen3' | 'system-design';
+type Section = 'engine-1-transformer' | 'engine-2-vae' | 'engine-3-node2vec' | 'engine-4-ncf' | 'engine-5-ensemble' | 'engine-6-contrastive' | 'engine-7-qwen3' | 'engine-8-clap' | 'system-design';
 
 interface Paper {
   title: string;
@@ -85,7 +85,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'User Modeling and User-Adapted Interaction, 12(4), pp. 331-370',
       summary: 'The definitive survey of hybrid recommendation approaches with over 4,300 citations. Burke identifies seven hybridization strategies. The paper demonstrates that hybrid systems consistently outperform any individual technique across all evaluation metrics.',
       keyInsight: 'No single recommendation technique is best for all scenarios. The art is in combining them — using each method\'s strengths to compensate for another\'s weaknesses.',
-      howWeUseIt: 'The ensemble engine runs all 6 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Enriched with editorial bridge explanations when available. Truly dynamic — every query produces fresh results.',
+      howWeUseIt: 'The ensemble engine runs all 7 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Enriched with editorial bridge explanations when available. Truly dynamic — every query produces fresh results.',
       doi: '10.1023/A:1021240730564',
     },
   ],
@@ -121,6 +121,18 @@ const PAPERS: Record<string, Paper[]> = {
       doi: '10.48550/arXiv.2506.05176',
     },
   ],
+  'engine-8-clap': [
+    {
+      title: 'Large-scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation',
+      authors: 'Wu, Y., Chen, K., Zhang, T., Hui, Y., Berg-Kirkpatrick, T., Dubnov, S.',
+      year: 2023,
+      venue: 'ICASSP 2023 — IEEE International Conference on Acoustics, Speech and Signal Processing',
+      summary: 'CLAP trains an audio encoder (HTSAT) and a text encoder (RoBERTa) with a contrastive objective over large-scale audio-caption pairs, producing a JOINT embedding space where a sound clip and a text description of it land close together. Feature fusion lets it handle variable-length audio; keyword-to-caption augmentation expands noisy tag data into training captions.',
+      keyInsight: 'Audio and language can share one geometry. In a joint audio-text space, "a melancholic acoustic ballad" is a VECTOR — and ranking songs against it is just cosine similarity, no classifier needed.',
+      howWeUseIt: 'We embed each song\'s 30-second iTunes preview (48kHz mono, 10s windows, mean-pooled) with the music-specialized larger_clap_music checkpoint into 512-d unit vectors — the only engine that hears the recording instead of reading lyrics or metadata. The same joint space powers sound-mood search: each MoodRooms mood has a text prompt embedded offline, and at runtime a numpy dot product ranks every song\'s AUDIO against the mood\'s description. Songs without an available preview are skipped. Preview clips are never redistributed — only derived embeddings ship.',
+      doi: '10.1109/ICASSP49357.2023.10095969',
+    },
+  ],
   'system-design': [
     {
       title: 'Hybrid Recommender Systems: Survey and Experiments',
@@ -129,7 +141,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'User Modeling and User-Adapted Interaction, 12(4), pp. 331-370',
       summary: 'The definitive survey of hybrid recommendation approaches with over 4,300 citations. Burke identifies seven hybridization strategies. The paper demonstrates that hybrid systems consistently outperform any individual technique across all evaluation metrics.',
       keyInsight: 'No single recommendation technique is best for all scenarios. The art is in combining them — using each method\'s strengths to compensate for another\'s weaknesses.',
-      howWeUseIt: 'The Shubz-Taylor engine runs all 7 engines on the same seed songs and presents results side-by-side. Users can see how different ML techniques produce different recommendations from the same input — making the system both a recommendation tool and an educational platform.',
+      howWeUseIt: 'The Shubz-Taylor engine runs all 8 engines on the same seed songs and presents results side-by-side. Users can see how different ML techniques produce different recommendations from the same input — making the system both a recommendation tool and an educational platform.',
       doi: '10.1023/A:1021240730564',
     },
     {
@@ -139,7 +151,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'ACM Transactions on Information Systems, 22(1)',
       summary: 'Establishes the evaluation framework for recommendation systems. Introduces accuracy metrics alongside user-centric metrics (novelty, serendipity, coverage, diversity). Argues that accuracy alone is insufficient.',
       keyInsight: 'A recommendation system that only suggests things you already know is technically accurate but practically worthless. Serendipity — the delightful surprise — is what separates good recommendations from great ones.',
-      howWeUseIt: 'Our "Compare All Engines" mode lets users see which engines agree and which disagree — songs found by 5+ of the 7 engines are strong matches, while songs found by only 1 engine represent the serendipitous discoveries that single-technique systems would miss. One honest caveat: displayed lists are similarity-weighted samples (temperature 0.25) with a cross-artist quota, not raw top-K rankings, so lists vary between queries.',
+      howWeUseIt: 'Our "Compare All Engines" mode lets users see which engines agree and which disagree — songs found by 5+ of the 8 engines are strong matches, while songs found by only 1 engine represent the serendipitous discoveries that single-technique systems would miss. One honest caveat: displayed lists are similarity-weighted samples (temperature 0.25) with a cross-artist quota, not raw top-K rankings, so lists vary between queries.',
       doi: '10.1145/963770.963772',
     },
   ],
@@ -185,7 +197,7 @@ function ArchitectureMindMap() {
     <div className="glass rounded-2xl p-6 overflow-hidden">
       <svg viewBox="0 0 700 480" className="w-full">
         {/* Center node */}
-        <MindMapNode label="7-Engine System" color="#D4AF37" x={350} y={225}
+        <MindMapNode label="8-Engine System" color="#D4AF37" x={350} y={225}
           children={[]} delay={0} />
 
         {/* Transformer Lyrics branch — top-left */}
@@ -218,9 +230,14 @@ function ArchitectureMindMap() {
           children={['Multi-modal', 'MLP Training', '48-dim']} delay={0.4} />
         <line x1={385} y1={240} x2={525} y2={335} stroke="rgba(91,155,213,0.15)" strokeWidth={1} strokeDasharray="4 4" />
 
+        {/* CLAP Audio branch — mid-left */}
+        <MindMapNode label="CLAP Audio" color="#ECC94B" x={80} y={225}
+          children={['Hears Audio', '512-dim Joint']} delay={0.45} />
+        <line x1={315} y1={225} x2={115} y2={225} stroke="rgba(236,201,75,0.15)" strokeWidth={1} strokeDasharray="4 4" />
+
         {/* Ensemble branch — bottom-center */}
         <MindMapNode label="Hybrid Ensemble" color="#ED8936" x={350} y={410}
-          children={['All 6 Embeddings', 'Rank Fusion', 'Consensus']} delay={0.5} />
+          children={['All 7 Embeddings', 'Rank Fusion', 'Consensus']} delay={0.5} />
         <line x1={350} y1={260} x2={350} y2={375} stroke="rgba(237,137,54,0.15)" strokeWidth={1} strokeDasharray="4 4" />
       </svg>
     </div>
@@ -353,7 +370,7 @@ function EngineStatsSection() {
     { value: '801', label: 'Total Embeddings (Taylor + Cross-Artist)' },
     { value: stats.editorial_bridge_count.toString(), label: 'Editorial Bridges' },
     { value: stats.unique_bridge_artists.toString(), label: 'Cross-Artist Connections' },
-    { value: '7', label: 'ML Engines' },
+    { value: '8', label: 'ML Engines' },
     { value: '46', label: 'Artists Scraped' },
   ];
 
@@ -462,7 +479,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
       title: 'Engine 5: Hybrid Ensemble',
       icon: <BookOpen size={18} />,
       color: '#ED8936',
-      description: 'Runs all 6 embedding engines at query time with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Enriched with editorial bridge explanations when available. Truly dynamic — every query produces fresh results.',
+      description: 'Runs all 7 embedding engines at query time with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Enriched with editorial bridge explanations when available. Truly dynamic — every query produces fresh results.',
     },
     {
       id: 'engine-6-contrastive',
@@ -479,11 +496,18 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
       description: 'Encodes the same 801-song corpus as Engine 1 with a 2025-era 0.6B-parameter embedding model (Qwen3-Embedding-0.6B, Apache 2.0). Its 32K-token context reads full lyrics — MiniLM truncates at 256 wordpieces — and produces 1024-dim vectors. A six-year encoder ablation, live in the UI.',
     },
     {
+      id: 'engine-8-clap',
+      title: 'Engine 8: CLAP Audio',
+      icon: <Zap size={18} />,
+      color: '#ECC94B',
+      description: 'The only engine that listens: CLAP (laion/larger_clap_music, Apache 2.0) embeds each 30-second preview into a 512-dim joint audio-text space. Song-to-song sound similarity, plus mood search where text prompts score directly against the audio. Covers songs with an available iTunes preview.',
+    },
+    {
       id: 'system-design',
       title: 'System Design & Evaluation',
       icon: <Sparkles size={18} />,
       color: '#D4AF37',
-      description: 'The six embedding engines pre-compute vectors offline (the ensemble aggregates them at query time). At runtime, each query costs <10ms of numpy similarity. The "Compare All Engines" mode runs every engine on the same seed and presents results side-by-side, turning the system into both a recommendation tool and an educational platform.',
+      description: 'The seven embedding engines pre-compute vectors offline (the ensemble aggregates them at query time). At runtime, each query costs <10ms of numpy similarity. The "Compare All Engines" mode runs every engine on the same seed and presents results side-by-side, turning the system into both a recommendation tool and an educational platform.',
     },
   ];
 
@@ -531,7 +555,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
             <div className="flex flex-col md:flex-row gap-4">
               {[
                 { step: '1', title: 'Data Collection', desc: '801 songs: 341 Taylor (CSV + Spotify), 460 cross-artist (Genius API scraper), 323 with audio features', color: '#E53E3E' },
-                { step: '2', title: 'Pre-compute', desc: '6 ML models trained offline: MiniLM + Qwen3 lyric encoding, VAE (300 epochs), node2vec walks + Word2Vec, NCF MLP (200 epochs), contrastive head (100 epochs)', color: '#9F7AEA' },
+                { step: '2', title: 'Pre-compute', desc: '7 ML models trained offline: MiniLM + Qwen3 lyric encoding, CLAP audio encoding, VAE (300 epochs), node2vec walks + Word2Vec, NCF MLP (200 epochs), contrastive head (100 epochs)', color: '#9F7AEA' },
                 { step: '3', title: 'Embedding Storage', desc: 'Pre-computed vectors saved as .npy files. Total: ~5MB. No GPU needed at runtime.', color: '#48BB78' },
                 { step: '4', title: 'Query Processing', desc: 'User selects seed songs → each engine computes similarity in its embedding space → results ranked and interleaved → <10ms per engine', color: '#5B9BD5' },
                 { step: '5', title: 'Presentation', desc: 'Results displayed with per-engine explanations, feature breakdowns, overlap badges, and export', color: '#D4AF37' },
@@ -603,7 +627,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
               <p className="text-[10px] tracking-[0.2em] uppercase text-[#ED8936]/50 mb-2">Engine 5 — Hybrid Ensemble Rank Aggregation</p>
               <div className="font-mono text-xs text-[#ED8936]/60 bg-black/30 rounded-lg p-4 overflow-x-auto">
                 {'score(s) = Σ_e w_e × (1 − rank_e(s)/N_e);  if found by ≥3 engines: score ×= 1.3'}<br />
-                {'w = [0.25 lyrics, 0.25 qwen3, 0.15 vae, 0.15 contrastive, 0.10 graph, 0.10 ncf]'}
+                {'w = [0.22 lyrics, 0.22 qwen3, 0.12 audio, 0.12 vae, 0.12 contrastive, 0.10 graph, 0.10 ncf]'}
               </div>
             </div>
           </div>

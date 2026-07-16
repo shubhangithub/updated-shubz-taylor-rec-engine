@@ -76,29 +76,46 @@ def get_csv_features(song_name: str) -> Optional[Dict]:
     return None
 
 
-def get_song_lyrics(song_name: str) -> Optional[str]:
-    """Look up lyrics from the static dataset."""
-    name = song_name.strip().lower()
-    song = _TAYLOR_DATA.get(name)
-    if song and song.get("lyrics"):
-        return song["lyrics"]
-    # Fuzzy match
-    for key, val in _TAYLOR_DATA.items():
-        if (name in key or key in name) and val.get("lyrics"):
-            return val["lyrics"]
-    return None
+def _resolve_song(song_name: str) -> Optional[Dict]:
+    """Find the dataset entry for a song by name.
 
-
-def get_full_song_data(song_name: str) -> Optional[Dict]:
-    """Get complete song data (features + lyrics + metadata)."""
+    Exact match first; then a length-guarded substring match that prefers the
+    MOST SPECIFIC (longest) matching key. The old `name in key or key in name`
+    rule matched almost anything for short inputs — e.g. "a" returned a real
+    song — so the fuzzy branch now requires >=4 chars and picks the best key.
+    """
     name = song_name.strip().lower()
+    if not name:
+        return None
     song = _TAYLOR_DATA.get(name)
     if song:
         return song
-    for key, val in _TAYLOR_DATA.items():
+    if len(name) < 4:
+        return None
+    best_key, best_len = None, -1
+    for key in _TAYLOR_DATA:
         if name in key or key in name:
-            return val
-    return None
+            # Longest key wins: prefer the full variant over a bare prefix
+            if len(key) > best_len:
+                best_key, best_len = key, len(key)
+    return _TAYLOR_DATA.get(best_key) if best_key else None
+
+
+def get_song_lyrics(song_name: str) -> Optional[str]:
+    """Look up lyrics from the static dataset."""
+    song = _resolve_song(song_name)
+    return song.get("lyrics") if song and song.get("lyrics") else None
+
+
+def get_full_song_data(song_name: str) -> Optional[Dict]:
+    """Get complete song data (features + lyrics + metadata).
+
+    Returns a shallow COPY so callers can enrich the result (atmosphere,
+    editorial bridges, preview URL) without mutating the shared in-memory
+    dataset for every subsequent request.
+    """
+    song = _resolve_song(song_name)
+    return dict(song) if song else None
 
 FEATURE_COLUMNS = [
     "danceability",
@@ -264,14 +281,29 @@ class MusicRecommender:
     def _editorial_fallback(
         self, song_ids: List[str], limit: int
     ) -> List[Dict]:
-        """When Spotify is unavailable, use editorial bridges."""
+        """When Spotify is unavailable, use editorial bridges.
+
+        Spotify lookup is tried first, but it returns None precisely when
+        Spotify is down — the condition this fallback exists for — so we also
+        treat each identifier as a possible song name directly (the Taylor-
+        centric flows pass names, not Spotify IDs).
+        """
         results = []
+        seen = set()
         for song_id in song_ids:
-            # Try to get song info for name lookup
-            info = self.spotify.get_song_info(song_id)
-            if info:
-                bridges = get_editorial_recommendations(info.get("name", ""))
+            names_to_try = [song_id]
+            info = self.spotify.get_song_info(song_id) if self.spotify.available else None
+            if info and info.get("name"):
+                names_to_try.insert(0, info["name"])
+            for name in names_to_try:
+                bridges = get_editorial_recommendations(name)
+                if not bridges:
+                    continue
                 for bridge in bridges:
+                    key = (bridge["song"].lower(), bridge["artist"].lower())
+                    if key in seen:
+                        continue
+                    seen.add(key)
                     results.append(
                         {
                             "name": bridge["song"],
@@ -283,6 +315,7 @@ class MusicRecommender:
                             "similarity": 0.85,
                         }
                     )
+                break  # first name that yields bridges wins
         return results[:limit]
 
     def _get_editorial_for_ids(self, song_ids: List[str]) -> List[Dict]:

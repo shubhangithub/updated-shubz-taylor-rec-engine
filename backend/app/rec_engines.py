@@ -1,6 +1,6 @@
 """
 Pluggable recommendation engine registry.
-7 engines: 6 embedding engines plus a hybrid ensemble that aggregates them.
+8 engines: 7 embedding engines plus a hybrid ensemble that aggregates them.
 Each cites the paper it implements or (where noted) adapts.
 """
 
@@ -34,7 +34,7 @@ def run_engine(key, song_names=None, song_ids=None, limit=10, **kwargs):
 
 def _init_engines():
     from app.engines import (lyrics_transformer, qwen3_engine, vae_engine, graph_engine,
-                             ncf_engine, contrastive_engine, ensemble_engine)
+                             ncf_engine, contrastive_engine, ensemble_engine, audio_engine)
 
     # Engine 1: Transformer Semantic Lyrics
     register_engine(
@@ -80,7 +80,7 @@ def _init_engines():
     register_engine(
         key="ensemble",
         name="Hybrid Ensemble",
-        description="Weighted rank aggregation across the 6 embedding engines at query time. Dynamic — different results each query. Consensus-boosted (x1.3 when found by 3+ engines).",
+        description="Weighted rank aggregation across the 7 embedding engines at query time. Dynamic — different results each query. Consensus-boosted (x1.3 when found by 3+ engines).",
         paper="Burke (2002) 'Hybrid Recommender Systems: Survey and Experiments', User Modeling and User-Adapted Interaction 12(4)",
         color="#ED8936",
         fn=lambda song_names, song_ids, limit, **kw: ensemble_engine.recommend(song_names, limit),
@@ -105,6 +105,24 @@ def _init_engines():
         color="#38B2AC",
         fn=lambda song_names, song_ids, limit, **kw: qwen3_engine.recommend(song_names, limit),
     )
+
+    # Engine 8: CLAP audio similarity — the only engine that hears the recording.
+    # Registered only when its (heavy, optional) embeddings exist, so it
+    # self-activates once computed instead of showing an empty column.
+    import os as _os
+    _audio_emb = _os.path.join(_os.path.dirname(_os.path.dirname(__file__)),
+                               'ml_data', 'audio_embeddings.npy')
+    if _os.path.exists(_audio_emb):
+        register_engine(
+            key="clap_audio",
+            name="CLAP Audio",
+            description="512-dim joint audio-text embeddings of 30-second previews (laion/larger_clap_music). Song-to-song sound similarity plus text->audio mood search; covers songs with an available preview.",
+            paper="Wu et al. (2023) 'Large-scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation' (CLAP), ICASSP, arXiv:2211.06687",
+            color="#ECC94B",
+            fn=lambda song_names, song_ids, limit, **kw: audio_engine.recommend(song_names, limit),
+        )
+    else:
+        logger.info("CLAP audio engine not registered (ml_data/audio_embeddings.npy absent)")
 
 
 try:

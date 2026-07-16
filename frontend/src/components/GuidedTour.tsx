@@ -22,7 +22,7 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     narration: 'Welcome to The Shubz-Taylor Recommendation Engine',
-    subtext: 'A Taylor Swift-centric music discovery platform powered by 6 ML engines',
+    subtext: 'A Taylor Swift-centric music discovery platform powered by 8 ML engines',
     action: (props) => props.navigateTo('constellation'),
     duration: 4000,
   },
@@ -42,8 +42,8 @@ const TOUR_STEPS: TourStep[] = [
     duration: 5000,
   },
   {
-    narration: '7 ML Recommendation Engines',
-    subtext: 'Transformer Lyrics, Qwen3 Embeddings, VAE, Node2Vec, Neural Collaborative, Hybrid Ensemble, Contrastive SSL',
+    narration: '8 ML Recommendation Engines',
+    subtext: 'Transformer Lyrics, Qwen3 Embeddings, CLAP Audio, VAE, Node2Vec, Neural Collaborative, Hybrid Ensemble, Contrastive SSL',
     action: (props) => props.navigateTo('recommend'),
     duration: 5000,
   },
@@ -93,6 +93,7 @@ export default function GuidedTour({
       cleanup();
       const s = TOUR_STEPS[idx];
       if (!s) {
+        setSearchQuery('');
         onEnd();
         return;
       }
@@ -125,6 +126,7 @@ export default function GuidedTour({
         if (idx + 1 < TOUR_STEPS.length) {
           setStepIndex(idx + 1);
         } else {
+          setSearchQuery('');
           onEnd();
         }
       }, s.duration);
@@ -148,18 +150,24 @@ export default function GuidedTour({
     }
   }, [isActive]);
 
+  // Clear the tour's demo search so the constellation isn't left highlighted.
+  const endTour = useCallback(() => {
+    setSearchQuery('');
+    onEnd();
+  }, [setSearchQuery, onEnd]);
+
   const handleNext = () => {
     cleanup();
     if (stepIndex + 1 < totalSteps) {
       setStepIndex(stepIndex + 1);
     } else {
-      onEnd();
+      endTour();
     }
   };
 
   const handleSkip = () => {
     cleanup();
-    onEnd();
+    endTour();
   };
 
   return (

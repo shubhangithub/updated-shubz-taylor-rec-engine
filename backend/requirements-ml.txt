@@ -14,3 +14,4 @@ networkx
 openai-whisper
 lyricsgenius
 scipy
+imageio-ffmpeg

@@ -199,7 +199,7 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState<Song[]>([]);
   const [editorialBridges, setEditorialBridges] = useState<EditorialBridge[]>([]);
   const [selectedBridge, setSelectedBridge] = useState<EditorialBridge | null>(null);
-  const [moodSongs] = useState<Record<string, string[]>>(FALLBACK_MOOD_SONGS);
+  const [moodSongs, setMoodSongs] = useState<Record<string, string[]>>(FALLBACK_MOOD_SONGS);
   const [eraArtists, setEraArtists] = useState<Record<string, EraArtist[]>>(FALLBACK_ERA_ARTISTS);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [isTourActive, setIsTourActive] = useState(false);
@@ -233,6 +233,24 @@ export default function Home() {
   useEffect(() => {
     api.getCatalog().then(data => {
       if (data && data.length > 0) setCatalog(data);
+    }).catch(() => {});
+  }, []);
+
+  // Fetch the backend's curated mood song lists (fallback already set).
+  // These had drifted from the backend MOOD_MAPPING because the API was never called.
+  useEffect(() => {
+    const moods = Object.keys(FALLBACK_MOOD_SONGS);
+    Promise.all(moods.map(async (mood) => {
+      const songs = await api.getMoodSongs(mood);
+      return [mood, songs] as const;
+    })).then(pairs => {
+      const next: Record<string, string[]> = {};
+      for (const [mood, songs] of pairs) {
+        if (songs && songs.length > 0) next[mood] = songs;
+      }
+      if (Object.keys(next).length > 0) {
+        setMoodSongs(prev => ({ ...prev, ...next }));
+      }
     }).catch(() => {});
   }, []);
 
@@ -289,8 +307,13 @@ export default function Home() {
       const results = await api.searchSongs(songName, 'Taylor Swift');
       if (results.length > 0) {
         const songInfo = await api.getSongInfo(results[0].id);
-        // Merge: Spotify data (image, urls) + local data (lyrics, features, atmosphere)
+        // Merge: Spotify data (image, urls) + local data (lyrics, features, atmosphere).
+        // getSongInfo returns a blank-named stub on error, so backfill core
+        // fields from local data / the requested name rather than showing "".
         const merged = { ...songInfo };
+        if (!merged.name) merged.name = localData?.name || songName;
+        if (!merged.artist) merged.artist = localData?.artist || 'Taylor Swift';
+        if (!merged.album) merged.album = localData?.album || fallbackAlbum || '';
         if (localData) {
           if (localData.lyrics) merged.lyrics = localData.lyrics;
           if (localData.atmosphere) merged.atmosphere = localData.atmosphere;
@@ -347,7 +370,9 @@ export default function Home() {
           name: localData.name || songName,
           artist: 'Taylor Swift',
           album: localData.album || fallbackAlbum || '',
-          preview_url: null,
+          // The song-data response already carries an iTunes preview — use it
+          // instead of hardcoding null (which silenced audio for local songs).
+          preview_url: localData.preview_url || null,
           external_url: '',
           image: null,
           lyrics: localData.lyrics,

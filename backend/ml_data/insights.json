@@ -238,7 +238,7 @@
     "n_songs": 317
   },
   "engine_consensus": {
-    "title": "When 7 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
+    "title": "When 8 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
     "hypothesis": "Different ML architectures capture different aspects of musical similarity. Engines trained on lyrics vs. audio vs. graphs should produce divergent but complementary recommendations.",
     "engines": [
       {
@@ -282,12 +282,20 @@
         "expected_bias": "Songs that similar patterns of features + editorial bridges suggest"
       },
       {
+        "name": "CLAP Audio",
+        "key": "clap_audio",
+        "dim": 512,
+        "signal": "how the recording sounds",
+        "paper": "Wu et al. (2023)",
+        "expected_bias": "Sonic texture and production similarity — the only engine that hears audio (songs with previews only)"
+      },
+      {
         "name": "Hybrid Ensemble",
         "key": "ensemble",
         "dim": 0,
         "signal": "weighted rank aggregation",
         "paper": "Burke (2002)",
-        "expected_bias": "Consensus across the six embedding engines, enriched with editorial-bridge explanations"
+        "expected_bias": "Consensus across the seven embedding engines, enriched with editorial-bridge explanations"
       },
       {
         "name": "Contrastive SSL",
@@ -298,10 +306,10 @@
         "expected_bias": "Meaning that survives word dropout and line reordering"
       }
     ],
-    "total_embedding_dimensions": 1600,
+    "total_embedding_dimensions": 2112,
     "total_songs_covered": 801,
     "cross_artist_songs": 460,
-    "finding": "The 7 engines span 1600 embedding dimensions across 801 songs. Every embedding engine except Graph Node2Vec (whose graph covers the 323 Taylor songs with audio features) recommends across the full 47-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
+    "finding": "The 8 engines span 2112 embedding dimensions across 801 songs. Every embedding engine except Graph Node2Vec (whose graph covers the Taylor songs with audio features) recommends across the full 47-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
     "methodology": "Each engine ranks songs by similarity to a seed; displayed lists are similarity-weighted samples (temperature 0.25) with a cross-artist quota, so they vary between queries. Consensus counts how many engines include a given song in their displayed results. High consensus = reliable match. Low consensus but high individual score = serendipitous discovery."
   },
   "songwriting_density": {

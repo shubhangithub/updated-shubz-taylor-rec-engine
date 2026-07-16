@@ -21,6 +21,10 @@ TRENDING_PATH = os.path.join(ML_DATA, 'trending_history.json')
 def fetch_itunes_trending():
     """Fetch Taylor Swift's top tracks from iTunes Search API."""
     try:
+        # NOTE: iTunes Search has no "trending"/chart endpoint. `sort` is not a
+        # supported parameter (it was silently ignored), so this returns iTunes'
+        # relevance-ranked catalog results — week-over-week movement reflects
+        # search-result reshuffling, not popularity. Labeled honestly in the UI.
         resp = requests.get(
             "https://itunes.apple.com/search",
             params={
@@ -28,7 +32,6 @@ def fetch_itunes_trending():
                 "media": "music",
                 "entity": "song",
                 "limit": 50,
-                "sort": "recent",
             },
             timeout=15,
         )

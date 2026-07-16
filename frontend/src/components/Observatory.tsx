@@ -33,18 +33,9 @@ function useSongFeatures() {
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    fetch(`${url}/api/catalog`)
-      .then(r => r.json())
-      .then(data => {
-        const catalog = data.catalog || [];
-        // Now fetch the full dataset for features
-        return fetch(`${url}/api/song-data/Tim McGraw`)
-          .then(() => catalog); // Just to test connectivity
-      })
-      .catch(() => [])
-      .finally(() => setLoading(false));
-
-    // Load features from the dataset endpoint
+    // Load features from the dataset endpoint (this is the only fetch the
+    // Observatory needs — a prior two-request "connectivity test" fired two
+    // extra requests per mount against the Render free tier for no data).
     fetch(`${url}/api/all-song-features`)
       .then(r => r.ok ? r.json() : { songs: [] })
       .then(data => {

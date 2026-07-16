@@ -55,7 +55,7 @@ TAYLOR_CATALOG = [
     {"name": "All Too Well", "album": "Red", "era": "Red", "track_number": 5, "is_single": False, "is_vault_track": False},
     {"name": "22", "album": "Red", "era": "Red", "track_number": 6, "is_single": True, "is_vault_track": False},
     {"name": "I Almost Do", "album": "Red", "era": "Red", "track_number": 7, "is_single": False, "is_vault_track": False},
-    {"name": "We Are Never Getting Back Together", "album": "Red", "era": "Red", "track_number": 8, "is_single": True, "is_vault_track": False},
+    {"name": "We Are Never Ever Getting Back Together", "album": "Red", "era": "Red", "track_number": 8, "is_single": True, "is_vault_track": False},
     {"name": "Stay Stay Stay", "album": "Red", "era": "Red", "track_number": 9, "is_single": False, "is_vault_track": False},
     {"name": "The Last Time", "album": "Red", "era": "Red", "track_number": 10, "is_single": False, "is_vault_track": False},
     {"name": "Holy Ground", "album": "Red", "era": "Red", "track_number": 11, "is_single": False, "is_vault_track": False},
@@ -64,7 +64,7 @@ TAYLOR_CATALOG = [
     {"name": "Everything Has Changed", "album": "Red", "era": "Red", "track_number": 14, "is_single": True, "is_vault_track": False},
     {"name": "Starlight", "album": "Red", "era": "Red", "track_number": 15, "is_single": False, "is_vault_track": False},
     {"name": "Begin Again", "album": "Red", "era": "Red", "track_number": 16, "is_single": True, "is_vault_track": False},
-    {"name": "All Too Well (10 Minute Version)", "album": "Red (Taylor's Version)", "era": "Red", "track_number": 30, "is_single": True, "is_vault_track": True},
+    {"name": "All Too Well (10 Minute Version) [Taylor's Version] [From The Vault]", "album": "Red (Taylor's Version)", "era": "Red", "track_number": 30, "is_single": True, "is_vault_track": True},
 
     # 1989 - 2014
     {"name": "Welcome to New York", "album": "1989", "era": "1989", "track_number": 1, "is_single": False, "is_vault_track": False},
@@ -144,7 +144,7 @@ TAYLOR_CATALOG = [
     {"name": "gold rush", "album": "evermore", "era": "evermore", "track_number": 3, "is_single": False, "is_vault_track": False},
     {"name": "'tis the damn season", "album": "evermore", "era": "evermore", "track_number": 4, "is_single": False, "is_vault_track": False},
     {"name": "tolerate it", "album": "evermore", "era": "evermore", "track_number": 5, "is_single": False, "is_vault_track": False},
-    {"name": "no body no crime", "album": "evermore", "era": "evermore", "track_number": 6, "is_single": True, "is_vault_track": False},
+    {"name": "no body, no crime", "album": "evermore", "era": "evermore", "track_number": 6, "is_single": True, "is_vault_track": False},
     {"name": "happiness", "album": "evermore", "era": "evermore", "track_number": 7, "is_single": False, "is_vault_track": False},
     {"name": "dorothea", "album": "evermore", "era": "evermore", "track_number": 8, "is_single": False, "is_vault_track": False},
     {"name": "coney island", "album": "evermore", "era": "evermore", "track_number": 9, "is_single": False, "is_vault_track": False},
@@ -162,7 +162,7 @@ TAYLOR_CATALOG = [
     {"name": "Maroon", "album": "Midnights", "era": "Midnights", "track_number": 2, "is_single": False, "is_vault_track": False},
     {"name": "Anti-Hero", "album": "Midnights", "era": "Midnights", "track_number": 3, "is_single": True, "is_vault_track": False},
     {"name": "Snow on the Beach", "album": "Midnights", "era": "Midnights", "track_number": 4, "is_single": True, "is_vault_track": False},
-    {"name": "You're On Your Own Kid", "album": "Midnights", "era": "Midnights", "track_number": 5, "is_single": False, "is_vault_track": False},
+    {"name": "You're On Your Own, Kid", "album": "Midnights", "era": "Midnights", "track_number": 5, "is_single": False, "is_vault_track": False},
     {"name": "Midnight Rain", "album": "Midnights", "era": "Midnights", "track_number": 6, "is_single": False, "is_vault_track": False},
     {"name": "Question...?", "album": "Midnights", "era": "Midnights", "track_number": 7, "is_single": False, "is_vault_track": False},
     {"name": "Vigilante Shit", "album": "Midnights", "era": "Midnights", "track_number": 8, "is_single": False, "is_vault_track": False},
@@ -184,7 +184,7 @@ TAYLOR_CATALOG = [
     {"name": "The Tortured Poets Department", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 2, "is_single": False, "is_vault_track": False},
     {"name": "My Boy Only Breaks His Favorite Toys", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 3, "is_single": False, "is_vault_track": False},
     {"name": "Down Bad", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 4, "is_single": True, "is_vault_track": False},
-    {"name": "So Long London", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 5, "is_single": False, "is_vault_track": False},
+    {"name": "So Long, London", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 5, "is_single": False, "is_vault_track": False},
     {"name": "But Daddy I Love Him", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 6, "is_single": False, "is_vault_track": False},
     {"name": "Fresh Out the Slammer", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 7, "is_single": False, "is_vault_track": False},
     {"name": "Florida!!!", "album": "The Tortured Poets Department", "era": "The Tortured Poets Department", "track_number": 8, "is_single": False, "is_vault_track": False},
@@ -226,6 +226,44 @@ TAYLOR_CATALOG = [
     {"name": "Honey", "album": "The Life Of A Showgirl", "era": "The Life Of A Showgirl", "track_number": 11, "is_single": False, "is_vault_track": False},
     {"name": "The Life of a Showgirl", "album": "The Life Of A Showgirl", "era": "The Life Of A Showgirl", "track_number": 12, "is_single": True, "is_vault_track": False},
 ]
+
+
+def canonical_era(album: str) -> str:
+    """Normalize a raw album string to one of the 12 canonical era names.
+
+    The features dataset stores albums verbatim from Spotify/iTunes — all-caps
+    ("THE TORTURED POETS DEPARTMENT"), "(Taylor's Version)" suffixes, and
+    editions ("The Taylor Swift Holiday Collection") — none of which match the
+    ERA_THEMES keys the frontend themes on. This maps them to canonical eras so
+    every consumer (theming, Observatory, SongWorld, era-features) agrees.
+    """
+    if not album:
+        return album
+    base = album.strip()
+    for suffix in (" (Taylor's Version)", " [Taylor's Version]"):
+        if base.lower().endswith(suffix.lower()):
+            base = base[: -len(suffix)].strip()
+    low = base.lower()
+    # Exact (case-insensitive) match against canonical era names
+    for era in ERA_THEMES:
+        if low == era.lower():
+            return era
+    # Edition/holiday variants fold into their base era
+    aliases = {
+        "the taylor swift holiday collection": "Taylor Swift",
+        "the taylor swift holiday collection - ep": "Taylor Swift",
+        "beautiful eyes": "Taylor Swift",
+        "the more fearless": "Fearless",
+        "1989 (deluxe)": "1989",
+        "lover (target exclusive)": "Lover",
+    }
+    if low in aliases:
+        return aliases[low]
+    # Longest canonical name that is a prefix of the album (handles editions)
+    for era in sorted(ERA_THEMES, key=len, reverse=True):
+        if low.startswith(era.lower()):
+            return era
+    return album
 
 
 ERA_THEMES = {

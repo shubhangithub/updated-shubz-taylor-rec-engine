@@ -79,6 +79,7 @@ The engine discovers connections between Taylor and other artists through shared
 4. Optionally re-train downstream engines (VAE, NCF, Contrastive, Qwen3) that depend on the full corpus:
    ```bash
    python -m ml.train_vae && python -m ml.train_ncf && python -m ml.train_contrastive && python -m ml.compute_qwen3_embeddings
+   python -m ml.download_previews && python -m ml.compute_audio_embeddings   # CLAP audio engine
    ```
 
 ### Add Editorial Bridges

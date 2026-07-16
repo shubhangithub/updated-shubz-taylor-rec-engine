@@ -128,7 +128,14 @@ class SpotifyClient:
             artist_id = artist["id"]
 
             top_tracks = self.sp.artist_top_tracks(artist_id, country="US")
-            related = self.sp.artist_related_artists(artist_id)
+            # Spotify deprecated Related Artists (Nov 2024) for apps without
+            # extended access — isolate it so its 403 doesn't sink the rest of
+            # the artist response (top tracks, images, genres).
+            try:
+                related = self.sp.artist_related_artists(artist_id)
+            except Exception as e:
+                logger.info(f"Related-artists unavailable for {artist_name}: {e}")
+                related = {"artists": []}
 
             images = artist.get("images", [])
             return {
@@ -292,7 +299,11 @@ def get_itunes_preview(song_name: str, artist: str = "Taylor Swift") -> Optional
     """Get a 30-second preview URL from iTunes Search API (free, no auth needed)."""
     try:
         import requests
-        query = f"{song_name} {artist}".replace(" ", "+")
+        from urllib.parse import quote_plus
+        # quote_plus, not replace(" ","+"): titles like "I Knew You Were
+        # Trouble & More" contain '&', which would otherwise terminate the
+        # term parameter and search on a truncated prefix.
+        query = quote_plus(f"{song_name} {artist}")
         resp = requests.get(
             f"https://itunes.apple.com/search?term={query}&media=music&limit=3",
             timeout=5,

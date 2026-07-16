@@ -1,5 +1,5 @@
 """
-Hybrid Ensemble Engine — blends all 6 embedding engines at query time.
+Hybrid Ensemble Engine — blends all 7 embedding engines at query time.
 Replaces the static Knowledge Graph with dynamic weighted rank aggregation
 (Burke, 2002: weighted hybridization).
 """
@@ -11,17 +11,18 @@ logger = logging.getLogger(__name__)
 
 
 def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
-    """Run all 6 embedding engines and merge results with weighted voting."""
-    from app.engines import (lyrics_transformer, qwen3_engine, vae_engine,
-                             graph_engine, ncf_engine, contrastive_engine)
+    """Run all 7 embedding engines and merge results with weighted voting."""
+    from app.engines import (lyrics_transformer, qwen3_engine, vae_engine, graph_engine,
+                             ncf_engine, contrastive_engine, audio_engine)
     from app.editorial import get_editorial_recommendations
 
     # Engine weights (sum to 1.0)
     engines = [
-        (lyrics_transformer, 0.25, "lyrics_transformer"),
-        (qwen3_engine, 0.25, "qwen3_embed"),
-        (vae_engine, 0.15, "vae_latent"),
-        (contrastive_engine, 0.15, "contrastive"),
+        (lyrics_transformer, 0.22, "lyrics_transformer"),
+        (qwen3_engine, 0.22, "qwen3_embed"),
+        (audio_engine, 0.12, "clap_audio"),
+        (vae_engine, 0.12, "vae_latent"),
+        (contrastive_engine, 0.12, "contrastive"),
         (graph_engine, 0.10, "graph_node2vec"),
         (ncf_engine, 0.10, "ncf"),
     ]
@@ -85,7 +86,7 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
             'artist': item['artist'],
             'similarity': round(item['score'], 4),
             'recommendation_type': 'ensemble',
-            'explanation': reason if reason else f"Ensemble score: {round(item['score']*100)}% (found by {item['engine_count']}/6 engines: {', '.join(item['engines'][:3])})",
+            'explanation': reason if reason else f"Ensemble score: {round(item['score']*100)}% (found by {item['engine_count']}/7 engines: {', '.join(item['engines'][:3])})",
             'engine_count': item['engine_count'],
             'engines_used': item['engines'],
         })

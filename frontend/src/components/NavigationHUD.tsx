@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, Clock, Palette, BarChart3, Search, X, ArrowLeft, Star, Sparkles, Cog, Play, BookOpen, TrendingUp } from 'lucide-react';
+import { Compass, Clock, Palette, BarChart3, Search, X, ArrowLeft, Star, Sparkles, Cog, Play, BookOpen, TrendingUp, Heart } from 'lucide-react';
 import { TaylorSong } from '@/lib/types';
 import { ERA_THEMES } from '@/lib/eraThemes';
 
@@ -28,6 +28,7 @@ interface NavigationHUDProps {
 const NAV_ITEMS: { view: View; icon: React.ReactNode; label: string }[] = [
   { view: 'constellation', icon: <Compass className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Constellation' },
   { view: 'recommend', icon: <Sparkles className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Recommend' },
+  { view: 'mood-rooms', icon: <Heart className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Moods' },
   { view: 'trending', icon: <TrendingUp className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Trending' },
   { view: 'eras', icon: <Clock className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Eras' },
   { view: 'observatory', icon: <BarChart3 className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Observatory' },
@@ -94,16 +95,16 @@ export default function NavigationHUD({
     }
   };
 
-  // Close dropdown on outside click
+  // Close the search dropdown when clicking outside it
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        // Don't close if clicking the input
+        onSearchClose();
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [onSearchClose]);
 
   return (
     <>

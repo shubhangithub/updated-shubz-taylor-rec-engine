@@ -14,15 +14,26 @@ interface InsightData {
 
 export default function Insights() {
   const [data, setData] = useState<InsightData | null>(null);
+  const [failed, setFailed] = useState(false);
   const [activePost, setActivePost] = useState<string | null>(null);
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     fetch(`${url}/api/insights`)
-      .then(r => r.ok ? r.json() : null)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('bad status')))
       .then(d => setData(d))
-      .catch(() => {});
+      .catch(() => setFailed(true));
   }, []);
+
+  if (failed) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center px-6">
+        <p className="text-white/30 font-display text-lg text-center">
+          Couldn&apos;t load insights. The backend may be waking up — try again in a minute.
+        </p>
+      </div>
+    );
+  }
 
   if (!data) {
     return (

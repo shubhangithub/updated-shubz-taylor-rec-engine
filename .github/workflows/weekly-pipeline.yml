@@ -77,14 +77,43 @@ jobs:
           TOKENIZERS_PARALLELISM: 'false'
         run: python -m ml.compute_lyrics_embeddings
 
-      # ====== PIPELINE STEP 4: Whisper sync new songs ======
+      # ====== PIPELINE STEP 4: Re-train downstream embedding engines ======
+      # The lyrics corpus can grow (new artists), so every engine keyed to the
+      # same index must be rebuilt — otherwise qwen3/vae/ncf/contrastive/graph
+      # indexes silently drift out of alignment with lyrics_index.json.
+      - name: 🔁 Re-train downstream engines
+        working-directory: backend
+        env:
+          TOKENIZERS_PARALLELISM: 'false'
+        run: |
+          python -m ml.compute_qwen3_embeddings
+          python -m ml.train_vae
+          python -m ml.train_ncf
+          python -m ml.train_contrastive
+          python -m ml.compute_graph_embeddings
+          python -m ml.build_knowledge_graph
+        continue-on-error: true
+
+      # ====== PIPELINE STEP 5: Whisper sync new songs ======
       - name: 🎙️ Whisper lyrics sync
         working-directory: backend
         run: python -m ml.sync_lyrics_whisper
         timeout-minutes: 40
         continue-on-error: true  # New songs might not have previews
 
-      # ====== PIPELINE STEP 5: Re-compute insights ======
+      # ====== PIPELINE STEP 6: CLAP audio engine (best-effort) ======
+      # Heavy: downloads 30s previews then runs CLAP inference. continue-on-error
+      # so a timeout/rate-limit keeps the last committed audio embeddings instead
+      # of failing the run. Previews are gitignored; only the .npy is committed.
+      - name: 🔊 CLAP audio embeddings
+        working-directory: backend
+        run: |
+          python -m ml.download_previews
+          python -m ml.compute_audio_embeddings
+        timeout-minutes: 45
+        continue-on-error: true
+
+      # ====== PIPELINE STEP 7: Re-compute insights ======
       - name: 📊 Update insights
         working-directory: backend
         run: python -m app.compute_insights

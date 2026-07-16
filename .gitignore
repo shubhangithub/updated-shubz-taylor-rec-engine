@@ -48,3 +48,6 @@ next-env.d.ts
 .cache
 *.cache
 backend/.cache
+
+# Apple preview clips (never redistribute; only derived embeddings are committed)
+backend/ml_data/previews/

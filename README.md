@@ -8,11 +8,11 @@
 
 This is a music recommendation engine built around one of the most studied and obsessed-over catalogs in modern music: Taylor Swift's. But it is not a Taylor Swift fan project. It is a serious attempt to answer a deceptively hard question: *why do two songs feel the same?*
 
-To find out, seven ML engines — six embedding engines plus a hybrid ensemble, each grounded in a published research technique — are pointed at 801 songs by Taylor Swift and 46 other artists. A Sentence-BERT transformer reads lyrics as meaning, and its 2025-era counterpart (Qwen3-Embedding-0.6B) reads the *whole* song where the 2019 encoder stops after the first verse. A Variational Autoencoder compresses those 384 dimensions of feeling into 16. A node2vec graph walker discovers connections no playlist algorithm would surface. An NCF-style neural pair model scores song affinity from synthetic interactions (there are no real listeners here — and this README says so rather than pretending otherwise). A Contrastive SSL head, trained with the same NT-Xent loss that taught machines to see, refines what makes two songs similar without song-level labels. And a hybrid ensemble aggregates all six, boosted where they agree.
+To find out, eight ML engines — seven embedding engines plus a hybrid ensemble, each grounded in a published research technique — are pointed at 801 songs by Taylor Swift and 46 other artists. A Sentence-BERT transformer reads lyrics as meaning, and its 2025-era counterpart (Qwen3-Embedding-0.6B) reads the *whole* song where the 2019 encoder stops after the first verse. A Variational Autoencoder compresses those 384 dimensions of feeling into 16. A node2vec graph walker discovers connections no playlist algorithm would surface. An NCF-style neural pair model scores song affinity from synthetic interactions (there are no real listeners here — and this README says so rather than pretending otherwise). A Contrastive SSL head, trained with the same NT-Xent loss that taught machines to see, refines what makes two songs similar without song-level labels. A CLAP audio model is the only engine that *hears* the recordings — 30-second previews embedded into a joint audio-text space, where a mood described in words can be scored against sound. And a hybrid ensemble aggregates all seven, boosted where they agree.
 
 The result is a 3D constellation of Taylor Swift's universe — every song a star, every connection a thread of light — with Whisper-synced karaoke, hand-written editorial bridges connecting Taylor to 53 other artists, and four data science investigations that read like magazine features.
 
-## The Seven Engines
+## The Eight Engines
 
 | Engine | Technique | Paper | What It Finds |
 |--------|-----------|-------|---------------|
@@ -21,10 +21,11 @@ The result is a 3D constellation of Taylor Swift's universe — every song a sta
 | **VAE Latent Space** | beta-VAE over lyrics embeddings (384 → 16-d) | Kingma & Welling, 2013 (ICLR 2014) | The hidden structure beneath lyrical similarity |
 | **Graph Node2Vec** | Second-order biased walks, p=1 q=2 (64-d) | Grover & Leskovec, 2016 (KDD) | Neighbors you would never think to visit |
 | **Neural Collaborative** | NCF-style MLP pair scorer on synthetic pairs (48-d) | He et al., 2017 (WWW) — adapted, no user data | Songs whose lyrics, audio profile, and editorial bridges predict affinity |
-| **Hybrid Ensemble** | Weighted rank aggregation across the 6 embedding engines | Burke, 2002 (UMUAI) | The consensus — and the disagreements — of all the others |
+| **CLAP Audio** | Joint audio-text embeddings of 30s previews (512-d) | Wu et al., 2023 (ICASSP) | Songs that *sound* alike — and moods scored against the audio itself |
+| **Hybrid Ensemble** | Weighted rank aggregation across the 7 embedding engines | Burke, 2002 (UMUAI) | The consensus — and the disagreements — of all the others |
 | **Contrastive SSL** | SimCLR-style NT-Xent on augmented lyrics (64-d) | Chen et al., 2020 (ICML); CLMR-inspired | Similarity refined without song-level labels |
 
-Five engines implement their papers directly; the NCF and contrastive engines are honest adaptations (no real users; frozen text encoder) and are labeled as such everywhere they appear. Every embedding is pre-computed and stored as numpy arrays. Runtime queries take less than 10 milliseconds.
+Six engines implement their papers directly; the NCF and contrastive engines are honest adaptations (no real users; frozen text encoder) and are labeled as such everywhere they appear. The CLAP engine covers the songs with an available iTunes preview; preview clips are never redistributed — only derived embeddings ship. Every embedding is pre-computed and stored as numpy arrays. Runtime queries take less than 10 milliseconds.
 
 ## Quick Start
 
@@ -87,13 +88,14 @@ The engine operates on a carefully assembled dataset:
 - **460 cross-artist songs** from 46 artists, scraped via Genius
 - **166 editorial bridges** — hand-written connections between Taylor and 53 unique artists, each with a poetic reason
 - **341 songs** with Whisper-synced lyric timings (averaging 34 timed lines per song)
+- **30-second iTunes previews** resolved for most of the corpus, embedded with CLAP (audio never committed — only the derived 512-d vectors)
 - **4 data science analyses** computed from real data, with real statistics and honest significance labels, zero placeholders
 
 A weekly GitHub Actions pipeline expands the artist pool, tracks trending songs, recomputes lyrics embeddings, Whisper-syncs new songs, and refreshes the insights. Cross-artist lyrics are scraped on demand; downstream engines (VAE, NCF, Contrastive, Qwen3) are re-trained manually after corpus changes.
 
 ## Research
 
-The papers behind the seven engines (implementations unless marked as adaptations):
+The papers behind the eight engines (implementations unless marked as adaptations):
 
 1. **Reimers & Gurevych (2019)** — "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks", EMNLP-IJCNLP — [arxiv.org/abs/1908.10084](https://arxiv.org/abs/1908.10084)
 2. **Zhang et al. (2025)** — "Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" — [arxiv.org/abs/2506.05176](https://arxiv.org/abs/2506.05176)
@@ -102,6 +104,7 @@ The papers behind the seven engines (implementations unless marked as adaptation
 5. **He et al. (2017)** — "Neural Collaborative Filtering", WWW — [arxiv.org/abs/1708.05031](https://arxiv.org/abs/1708.05031) — *adapted*: the MLP interaction function applied to song-song pairs; this project has no real user-item data
 6. **Burke (2002)** — "Hybrid Recommender Systems: Survey and Experiments", User Modeling and User-Adapted Interaction 12(4) — the weighted-hybridization strategy behind the ensemble
 7. **Chen et al. (2020)** — "A Simple Framework for Contrastive Learning of Visual Representations" (SimCLR), ICML — [arxiv.org/abs/2002.05709](https://arxiv.org/abs/2002.05709) — *adapted to lyrics text*, inspired by **Spijkervet & Burgoyne (2021)**, "Contrastive Learning of Musical Representations" (CLMR), ISMIR — a raw-audio method this project does not implement
+8. **Wu et al. (2023)** — "Large-scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation" (CLAP), ICASSP — [arxiv.org/abs/2211.06687](https://arxiv.org/abs/2211.06687) — music checkpoint `laion/larger_clap_music`
 
 See the [Engine page](https://shubz-taylor-recommendation-engine.vercel.app) on the live site for interactive explanations of each technique.
 

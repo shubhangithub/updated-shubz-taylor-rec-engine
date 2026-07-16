@@ -163,10 +163,13 @@ def main():
             logger.info(f"    No songs found")
         time.sleep(1)
 
-    # Save
+    # Save atomically: write to a temp file then os.replace, so a kill
+    # mid-write (e.g. the workflow's job timeout) can't truncate the corpus.
     os.makedirs(ML_DATA, exist_ok=True)
-    with open(LYRICS_PATH, "w") as f:
+    tmp_path = LYRICS_PATH + ".tmp"
+    with open(tmp_path, "w") as f:
         json.dump(existing, f, ensure_ascii=False)
+    os.replace(tmp_path, LYRICS_PATH)
 
     new_total_artists = len({s.get("artist", "").lower() for s in existing})
     logger.info(f"\nDone! Added {total_added} songs from {len(new_artists)} artists")

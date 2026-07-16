@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mood } from '@/lib/types';
-import { ArrowLeft, Music, ExternalLink, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Music, ExternalLink, ChevronRight, Ear } from 'lucide-react';
+import { getSoundMoodSongs, SoundMoodResult } from '@/lib/api';
 
 interface MoodRoom {
   mood: Mood;
@@ -234,6 +235,15 @@ interface MoodRoomsProps {
 export default function MoodRooms({ moodSongs, onSongClick }: MoodRoomsProps) {
   const [activeRoom, setActiveRoom] = useState<Mood | null>(null);
   const [isEntering, setIsEntering] = useState(false);
+  const [soundSongs, setSoundSongs] = useState<SoundMoodResult[]>([]);
+
+  // CLAP sound-mood ranking: how this mood SOUNDS, scored on the audio itself
+  useEffect(() => {
+    if (!activeRoom) { setSoundSongs([]); return; }
+    let cancelled = false;
+    getSoundMoodSongs(activeRoom).then(res => { if (!cancelled) setSoundSongs(res); });
+    return () => { cancelled = true; };
+  }, [activeRoom]);
 
   const handleEnterRoom = (mood: Mood) => {
     setIsEntering(true);
@@ -387,6 +397,42 @@ export default function MoodRooms({ moodSongs, onSongClick }: MoodRoomsProps) {
 
                 {(!moodSongs[activeRoom] || moodSongs[activeRoom].length === 0) && (
                   <p className="text-white/20 text-sm">No songs mapped to this mood yet.</p>
+                )}
+
+                {/* Sound-mood section: ranked by the CLAP audio engine, not curation */}
+                {soundSongs.length > 0 && (
+                  <div className="mt-10 max-w-4xl">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Ear size={14} style={{ color: currentRoom.colors.primary }} />
+                      <p className="text-[10px] tracking-[0.2em] uppercase text-white/30">
+                        Sounds like {currentRoom.name.toLowerCase()} — ranked by ear
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-white/20 mb-4">
+                      CLAP scores each song&apos;s actual audio against a text description of this mood — no curation, no lyrics.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {soundSongs.map((song, i) => (
+                        <motion.button
+                          key={`${song.name}-${song.artist}`}
+                          onClick={() => onSongClick(song.name)}
+                          className="glass glass-hover rounded-lg px-3 py-2.5 text-left flex items-center gap-2 transition-all duration-300"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 + i * 0.04 }}
+                        >
+                          <Music size={12} style={{ color: `${currentRoom.colors.primary}90` }} className="flex-shrink-0" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-xs text-white/70 truncate">{song.name}</span>
+                            <span className="block text-[10px] text-white/30 truncate">{song.artist}</span>
+                          </span>
+                          <span className="text-[9px] font-mono text-white/20 flex-shrink-0">
+                            {Math.round(song.similarity * 100)}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

@@ -32,11 +32,12 @@ interface TrendingProps {
 export default function Trending({ onSongClick }: TrendingProps) {
   const [data, setData] = useState<TrendingData | null>(null);
   const [recs, setRecs] = useState<Record<string, any[]>>({});
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     fetch(`${url}/api/trending`)
-      .then(r => r.ok ? r.json() : null)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('bad status')))
       .then(d => {
         setData(d);
         // Get ML recommendations for the #1 song
@@ -55,8 +56,18 @@ export default function Trending({ onSongClick }: TrendingProps) {
             .catch(() => {});
         }
       })
-      .catch(() => {});
+      .catch(() => setFailed(true));
   }, []);
+
+  if (failed) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center px-6">
+        <p className="text-white/30 font-display text-lg text-center">
+          Couldn&apos;t load trending data. The backend may be waking up — try again in a minute.
+        </p>
+      </div>
+    );
+  }
 
   if (!data || !data.songs?.length) {
     return (
@@ -77,11 +88,14 @@ export default function Trending({ onSongClick }: TrendingProps) {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp size={24} className="text-[#D4AF37]" />
-            <h1 className="font-display text-4xl md:text-5xl text-white/80">Trending Now</h1>
+            <h1 className="font-display text-4xl md:text-5xl text-white/80">This Week on iTunes</h1>
           </div>
           <p className="text-white/30 text-sm tracking-wider">
-            What&apos;s hot in Taylor&apos;s catalog right now — and what the engines think you&apos;d love alongside it.
+            Taylor&apos;s top iTunes catalog results this week — and what the engines think you&apos;d love alongside them.
             <span className="text-white/15 ml-2">Updated {data.date}</span>
+          </p>
+          <p className="text-white/15 text-[11px] mt-1">
+            Ranked by iTunes search relevance (no public chart API), so week-over-week movement reflects catalog reshuffling, not sales.
           </p>
         </motion.div>
 

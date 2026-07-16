@@ -179,7 +179,7 @@ def insight_2_valence_vs_sentiment(era_songs):
 
 
 def insight_3_engine_consensus(era_songs):
-    """When 7 Algorithms Disagree: Engine Architecture Comparison"""
+    """When 8 Algorithms Disagree: Engine Architecture Comparison"""
     engines = [
         {"name": "Transformer Lyrics", "key": "lyrics_transformer", "dim": 384, "signal": "semantic meaning",
          "paper": "Reimers & Gurevych (2019)", "expected_bias": "Lyrical similarity — songs about similar topics"},
@@ -191,8 +191,10 @@ def insight_3_engine_consensus(era_songs):
          "paper": "Grover & Leskovec (2016)", "expected_bias": "Songs connected through shared audio features + era membership (Taylor-only graph)"},
         {"name": "Neural Collaborative", "key": "ncf", "dim": 48, "signal": "multi-modal interaction (synthetic pairs)",
          "paper": "He et al. (2017), adapted", "expected_bias": "Songs that similar patterns of features + editorial bridges suggest"},
+        {"name": "CLAP Audio", "key": "clap_audio", "dim": 512, "signal": "how the recording sounds",
+         "paper": "Wu et al. (2023)", "expected_bias": "Sonic texture and production similarity — the only engine that hears audio (songs with previews only)"},
         {"name": "Hybrid Ensemble", "key": "ensemble", "dim": 0, "signal": "weighted rank aggregation",
-         "paper": "Burke (2002)", "expected_bias": "Consensus across the six embedding engines, enriched with editorial-bridge explanations"},
+         "paper": "Burke (2002)", "expected_bias": "Consensus across the seven embedding engines, enriched with editorial-bridge explanations"},
         {"name": "Contrastive SSL", "key": "contrastive", "dim": 64, "signal": "augmentation-robust meaning",
          "paper": "Chen et al. (2020); CLMR-inspired", "expected_bias": "Meaning that survives word dropout and line reordering"},
     ]
@@ -200,14 +202,27 @@ def insight_3_engine_consensus(era_songs):
     # Compute total embedding dimensions
     total_dims = sum(e["dim"] for e in engines)
 
+    # Derive corpus counts from the actual lyrics index, not hardcoded numbers
+    # (the weekly pipeline grows this corpus, so hardcoding drifts).
+    total_songs, cross_artist, n_artists = 801, 460, 47
+    try:
+        idx_path = os.path.join(ML_DIR, 'lyrics_index.json')
+        with open(idx_path) as f:
+            idx = json.load(f)
+        total_songs = len(idx)
+        cross_artist = sum(1 for e in idx if (e.get('artist') if isinstance(e, dict) else 'Taylor Swift') != 'Taylor Swift')
+        n_artists = len({(e.get('artist') if isinstance(e, dict) else 'Taylor Swift') for e in idx})
+    except Exception:
+        pass
+
     return {
-        "title": "When 7 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
+        "title": "When 8 Algorithms Disagree: A Multi-Engine Recommendation Analysis",
         "hypothesis": "Different ML architectures capture different aspects of musical similarity. Engines trained on lyrics vs. audio vs. graphs should produce divergent but complementary recommendations.",
         "engines": engines,
         "total_embedding_dimensions": total_dims,
-        "total_songs_covered": 801,
-        "cross_artist_songs": 460,
-        "finding": f"The 7 engines span {total_dims} embedding dimensions across 801 songs. Every embedding engine except Graph Node2Vec (whose graph covers the 323 Taylor songs with audio features) recommends across the full 47-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
+        "total_songs_covered": total_songs,
+        "cross_artist_songs": cross_artist,
+        "finding": f"The 8 engines span {total_dims} embedding dimensions across {total_songs} songs. Every embedding engine except Graph Node2Vec (whose graph covers the Taylor songs with audio features) recommends across the full {n_artists}-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
         "methodology": "Each engine ranks songs by similarity to a seed; displayed lists are similarity-weighted samples (temperature 0.25) with a cross-artist quota, so they vary between queries. Consensus counts how many engines include a given song in their displayed results. High consensus = reliable match. Low consensus but high individual score = serendipitous discovery.",
     }
 

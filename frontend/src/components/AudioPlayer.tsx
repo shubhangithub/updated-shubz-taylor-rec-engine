@@ -45,7 +45,14 @@ export default function AudioPlayer({ song, enabled, onToggle, onAudioRef }: Aud
     // If new song has NO preview, keep playing whatever is currently playing
     if (!url) return;
 
-    // New song with a preview — swap
+    // While muted, don't record this URL — otherwise unmuting would early-return
+    // on the "same URL" check above and the song would never start.
+    if (!enabled) {
+      setIsPlaying(false);
+      return;
+    }
+
+    // New song with a preview — commit and swap
     prevUrlRef.current = url;
 
     // Stop old audio
@@ -57,11 +64,6 @@ export default function AudioPlayer({ song, enabled, onToggle, onAudioRef }: Aud
 
     setProgress(0);
     setDuration(0);
-
-    if (!enabled) {
-      setIsPlaying(false);
-      return;
-    }
 
     const audio = new Audio(url);
     audio.volume = 0.4;

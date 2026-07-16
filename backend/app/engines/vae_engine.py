@@ -52,6 +52,7 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
         })
         if len(results) >= limit * 3: break
 
-    from app.engines.utils import interleave_results, diversify_results
+    from app.engines.utils import interleave_results, diversify_results, filter_seed_variants
+    results = filter_seed_variants(results, song_names)
     diversified = diversify_results(results, temperature=0.25)
     return interleave_results(diversified, limit)

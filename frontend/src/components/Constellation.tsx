@@ -6,6 +6,7 @@ import { OrbitControls, Text, Billboard, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import { ConstellationStar } from '@/lib/types';
 import { ERA_THEMES } from '@/lib/eraThemes';
+import { ERA_CLUSTER_CENTERS } from '@/lib/constellationData';
 
 // Individual star component
 function Star({
@@ -248,22 +249,8 @@ function ConstellationScene({
   onStarClick: (star: ConstellationStar) => void;
   autoRotate: boolean;
 }) {
-  // Balanced spiral — not too tight, not too spread
-  const ERA_CLUSTER_CENTERS: Record<string, [number, number, number]> = {
-    'Taylor Swift': [-10, 1, -5],
-    'Fearless': [-7, 4, -1],
-    'Speak Now': [-3, 6, 2],
-    'Red': [1, 4, 5],
-    '1989': [6, 2, 4],
-    'reputation': [8, -1, 2],
-    'Lover': [5, 0, -3],
-    'folklore': [1, 5, -6],
-    'evermore': [-3, 6, -4],
-    'Midnights': [-6, 2, 1],
-    'The Tortured Poets Department': [-1, -1, -2],
-    'The Life Of A Showgirl': [3, -2, -1],
-  };
-
+  // Cluster centers are the single source of truth in constellationData.ts
+  // (imported above) so the star layout and the nebula clusters never diverge.
   return (
     <>
       <color attach="background" args={['#020208']} />
@@ -326,6 +313,7 @@ interface ConstellationProps {
 export default function Constellation({ stars, onStarClick, searchQuery }: ConstellationProps) {
   const [hoveredStar, setHoveredStar] = useState<string | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
+  const autoRotateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchHighlights = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return new Set<string>();
@@ -339,8 +327,21 @@ export default function Constellation({ stars, onStarClick, searchQuery }: Const
 
   const handleHover = useCallback((id: string | null) => {
     setHoveredStar(id);
-    if (id) setAutoRotate(false);
-    else setTimeout(() => setAutoRotate(true), 3000);
+    // Cancel any pending resume so a stale timer can't re-enable rotation
+    // while the user is hovering a different star.
+    if (autoRotateTimer.current) {
+      clearTimeout(autoRotateTimer.current);
+      autoRotateTimer.current = null;
+    }
+    if (id) {
+      setAutoRotate(false);
+    } else {
+      autoRotateTimer.current = setTimeout(() => setAutoRotate(true), 3000);
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if (autoRotateTimer.current) clearTimeout(autoRotateTimer.current);
   }, []);
 
   return (

@@ -159,6 +159,22 @@ export async function getMoodSongs(mood: string): Promise<string[]> {
   }
 }
 
+export interface SoundMoodResult {
+  name: string;
+  artist: string;
+  similarity: number;
+  explanation?: string;
+}
+
+export async function getSoundMoodSongs(mood: string, limit = 9): Promise<SoundMoodResult[]> {
+  try {
+    const response = await api.get(`/api/sound-mood/${encodeURIComponent(mood)}?limit=${limit}`);
+    return response.data?.results || [];
+  } catch {
+    return [];
+  }
+}
+
 export async function compareEngines(
   songIds: string[],
   songNames: string[],
@@ -180,6 +196,19 @@ export async function getEngineStats(): Promise<EngineStats | null> {
   try {
     const response = await api.get('/api/engine-stats');
     return response.data;
+  } catch {
+    return null;
+  }
+}
+
+// Which engines are actually registered/live right now (some, like CLAP audio,
+// register only when their optional data is present). Returns null on error so
+// callers can fall back to showing all engines.
+export async function getEngineKeys(): Promise<string[] | null> {
+  try {
+    const response = await api.get('/api/engines');
+    const engines = response.data?.engines || [];
+    return engines.map((e: { key: string }) => e.key);
   } catch {
     return null;
   }

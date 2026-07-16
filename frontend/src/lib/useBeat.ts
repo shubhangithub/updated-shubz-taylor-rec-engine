@@ -22,11 +22,25 @@ export function useBeat(): BeatState & {
   const connectedElementRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number>(0);
   const smoothedRef = useRef(0);
+  const lastEmittedRef = useRef({ beatIntensity: 0, isPlaying: false });
 
   const [state, setState] = useState<BeatState>({
     beatIntensity: 0,
     isPlaying: false,
   });
+
+  // Only re-render on a perceptible change — the raw rAF loop ticks ~60x/s,
+  // and this hook lives at the app root, so unconditional setState would
+  // re-render the whole tree every frame while audio plays.
+  const emit = useCallback((next: BeatState) => {
+    const prev = lastEmittedRef.current;
+    if (prev.isPlaying === next.isPlaying &&
+        Math.abs(prev.beatIntensity - next.beatIntensity) < 0.01) {
+      return;
+    }
+    lastEmittedRef.current = next;
+    setState(next);
+  }, []);
 
   const connectAudio = useCallback((audio: HTMLAudioElement) => {
     // Already connected to this exact element
@@ -100,7 +114,7 @@ export function useBeat(): BeatState & {
         // Clamp tiny values to 0
         if (smoothedRef.current < 0.005) smoothedRef.current = 0;
 
-        setState({
+        emit({
           beatIntensity: smoothedRef.current,
           isPlaying: playing,
         });
@@ -109,7 +123,7 @@ export function useBeat(): BeatState & {
         if (smoothedRef.current > 0) {
           smoothedRef.current *= 0.92;
           if (smoothedRef.current < 0.005) smoothedRef.current = 0;
-          setState({ beatIntensity: smoothedRef.current, isPlaying: false });
+          emit({ beatIntensity: smoothedRef.current, isPlaying: false });
         }
       }
 

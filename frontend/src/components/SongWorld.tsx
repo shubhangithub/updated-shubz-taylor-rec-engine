@@ -345,6 +345,7 @@ function WaveLyricLine({
     'font-era-evermore': "'IM Fell DW Pica', serif",
     'font-era-midnights': "'Inter', sans-serif",
     'font-era-ttpd': "'Cormorant Garamond', serif",
+    'font-era-showgirl': "'Cinzel', serif",
   };
   const fontFamily = fontMap[fontClass] || "'Playfair Display', serif";
   const isItalic = ['font-era-folklore', 'font-era-ttpd'].includes(fontClass);

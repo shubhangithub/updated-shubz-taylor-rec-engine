@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Plus, Sparkles, Heart, ChevronRight, ExternalLink, Star, Loader2, Zap, Users, BookOpen, ToggleLeft, Info, Columns, Download, Music } from 'lucide-react';
 import { TaylorSong, Song, EditorialBridge, CompareResponse } from '@/lib/types';
@@ -13,7 +13,7 @@ interface RecEngineProps {
   onSongClick: (songName: string) => void;
 }
 
-type RecMode = 'lyrics_transformer' | 'qwen3_embed' | 'vae_latent' | 'graph_node2vec' | 'ncf' | 'ensemble' | 'contrastive';
+type RecMode = 'lyrics_transformer' | 'qwen3_embed' | 'clap_audio' | 'vae_latent' | 'graph_node2vec' | 'ncf' | 'ensemble' | 'contrastive';
 
 interface RecResult {
   name: string;
@@ -50,6 +50,14 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     longDesc: 'The 2025-era counterpart to Transformer Lyrics: Qwen3-Embedding-0.6B encodes the FULL lyrics of all 801 songs (32K-token context — MiniLM truncates at 256 wordpieces, so it never sees bridges or outros). Same corpus, six years of encoder progress, side by side. Paper: Zhang et al. (2025) Qwen3 Embedding, arXiv:2506.05176.',
   },
   {
+    key: 'clap_audio',
+    label: 'CLAP Audio',
+    icon: <Music size={16} />,
+    color: '#ECC94B',
+    description: '512-dim audio embeddings — it hears the song',
+    longDesc: 'The only engine that listens instead of reads: CLAP (laion/larger_clap_music) embeds each song\'s 30-second preview into a joint audio-text space. Song-to-song sound similarity, plus mood search where text prompts score directly against audio. Covers songs with an available preview. Paper: Wu et al. (2023) CLAP, ICASSP.',
+  },
+  {
     key: 'vae_latent',
     label: 'VAE Latent Space',
     icon: <Sparkles size={16} />,
@@ -78,8 +86,8 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     label: 'Hybrid Ensemble',
     icon: <BookOpen size={16} />,
     color: '#ED8936',
-    description: 'Weighted blend of all 6 embedding engines',
-    longDesc: 'Runs all 6 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Truly dynamic — different results each query. Based on Burke (2002) hybrid recommender architecture.',
+    description: 'Weighted blend of all 7 embedding engines',
+    longDesc: 'Runs all 7 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Truly dynamic — different results each query. Based on Burke (2002) hybrid recommender architecture.',
   },
   {
     key: 'contrastive',
@@ -135,12 +143,19 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
   const [selectedSongs, setSelectedSongs] = useState<TaylorSong[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [recMode, setRecMode] = useState<RecMode>('lyrics_transformer');
+  // Only show engines the backend has actually registered (CLAP audio is
+  // conditional on its embeddings existing). Null = not loaded yet → show all.
+  const [liveEngineKeys, setLiveEngineKeys] = useState<string[] | null>(null);
+  useEffect(() => {
+    api.getEngineKeys().then(keys => { if (keys) setLiveEngineKeys(keys); });
+  }, []);
+  const availableModes = REC_MODES.filter(m => !liveEngineKeys || liveEngineKeys.includes(m.key));
   const [results, setResults] = useState<RecResult[]>([]);
   const [editorialResults, setEditorialResults] = useState<EditorialBridge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [spotifyExporting, setSpotifyExporting] = useState(false);
-  const [spotifyResult, setSpotifyResult] = useState<{url: string; count: number} | null>(null);
+  const [spotifyResult, setSpotifyResult] = useState<{url: string; count: number; error?: string} | null>(null);
   const [showModeInfo, setShowModeInfo] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [compareData, setCompareData] = useState<CompareResponse | null>(null);
@@ -219,7 +234,7 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
         body: JSON.stringify({
           liked_songs: [],
           song_names: selectedSongs.map(s => s.name),
-          num_recommendations: 12,
+          num_per_engine: 12,
         }),
       });
       if (res.ok) {
@@ -290,7 +305,7 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
-            {REC_MODES.map((mode) => {
+            {availableModes.map((mode) => {
               const isActive = recMode === mode.key;
               return (
                 <motion.button
@@ -536,27 +551,45 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
                       setSpotifyExporting(true);
                       setSpotifyResult(null);
                       try {
-                        const statusRes = await fetch(`${url}/api/spotify/status`);
-                        const status = await statusRes.json();
-                        if (!status.authenticated) {
+                        // Obtain a per-session id from the OAuth popup via postMessage.
+                        const backendOrigin = new URL(url).origin;
+                        const sessionId = await new Promise<string | null>((resolve) => {
                           const popup = window.open(`${url}/api/spotify/login`, 'spotify-auth', 'width=500,height=700');
-                          await new Promise<void>((resolve) => {
-                            const check = setInterval(() => {
-                              if (!popup || popup.closed) { clearInterval(check); resolve(); }
-                            }, 500);
-                          });
+                          let settled = false;
+                          const onMessage = (e: MessageEvent) => {
+                            if (e.origin !== backendOrigin) return;
+                            if (e.data?.type !== 'spotify-auth') return;
+                            settled = true;
+                            window.removeEventListener('message', onMessage);
+                            clearInterval(check);
+                            resolve(e.data.ok ? e.data.sessionId : null);
+                          };
+                          window.addEventListener('message', onMessage);
+                          const check = setInterval(() => {
+                            if (!popup || popup.closed) {
+                              clearInterval(check);
+                              if (!settled) { window.removeEventListener('message', onMessage); resolve(null); }
+                            }
+                          }, 500);
+                        });
+                        if (!sessionId) {
+                          setSpotifyResult({ url: '', count: 0, error: 'Spotify sign-in was cancelled or failed.' });
+                          setSpotifyExporting(false);
+                          return;
                         }
                         const songs = results.map(r => `${r.name} ${r.artist}`);
                         const res = await fetch(`${url}/api/spotify/create-playlist`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ songs, name: `Shubz-Taylor: ${currentMode.label} Picks`, description: `Generated by The Shubz-Taylor Recommendation Engine using ${currentMode.label} engine` }),
+                          body: JSON.stringify({ session_id: sessionId, songs, name: `Shubz-Taylor: ${currentMode.label} Picks`, description: `Generated by The Shubz-Taylor Recommendation Engine using ${currentMode.label} engine` }),
                         });
                         if (res.ok) {
                           const data = await res.json();
                           setSpotifyResult({ url: data.playlist_url, count: data.tracks_added });
+                        } else {
+                          setSpotifyResult({ url: '', count: 0, error: 'Could not create the playlist.' });
                         }
-                      } catch (e) { console.error('Spotify export error:', e); }
+                      } catch (e) { console.error('Spotify export error:', e); setSpotifyResult({ url: '', count: 0, error: 'Spotify export failed.' }); }
                       setSpotifyExporting(false);
                     }}
                     disabled={spotifyExporting}
@@ -634,14 +667,20 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
               )}
               {spotifyResult && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-xl p-4 flex items-center gap-3 border border-green-500/20">
-                  <Music size={18} className="text-green-400" />
+                  className={`glass rounded-xl p-4 flex items-center gap-3 border ${spotifyResult.error ? 'border-red-500/20' : 'border-green-500/20'}`}>
+                  <Music size={18} className={spotifyResult.error ? 'text-red-400' : 'text-green-400'} />
                   <div>
-                    <p className="text-sm text-green-400">Playlist created! {spotifyResult.count} tracks added</p>
-                    <a href={spotifyResult.url} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-green-400/60 hover:text-green-400 underline">
-                      Open in Spotify
-                    </a>
+                    {spotifyResult.error ? (
+                      <p className="text-sm text-red-400">{spotifyResult.error}</p>
+                    ) : (
+                      <>
+                        <p className="text-sm text-green-400">Playlist created! {spotifyResult.count} tracks added</p>
+                        <a href={spotifyResult.url} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-green-400/60 hover:text-green-400 underline">
+                          Open in Spotify
+                        </a>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}

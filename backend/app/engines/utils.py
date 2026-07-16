@@ -1,5 +1,26 @@
 """Shared utilities for recommendation engines."""
+import re
 from typing import List, Dict
+
+
+def base_title(name: str) -> str:
+    """Strip re-recording / edition / version markers to a song's base title.
+
+    "All Too Well (10 Minute Version) [Taylor's Version] [From The Vault]" and
+    "All Too Well" collapse to the same base, so an engine won't recommend a
+    seed song's own re-recording straight back as the top match.
+    """
+    s = (name or "").lower()
+    s = re.sub(r"[\(\[][^\)\]]*[\)\]]", " ", s)  # drop (…) and […] annotations
+    s = re.sub(r"\s*-\s*(taylor'?s version|from the vault|remix|acoustic|live|demo|piano version).*$", " ", s)
+    s = re.sub(r"[^a-z0-9]+", " ", s).strip()
+    return s
+
+
+def filter_seed_variants(results: List[Dict], seed_names: List[str]) -> List[Dict]:
+    """Drop results that are the same base song as any seed (re-recordings, edits)."""
+    seed_bases = {base_title(n) for n in seed_names}
+    return [r for r in results if base_title(r.get("name", "")) not in seed_bases]
 
 
 def resolve_seed_indices(song_names: List[str], index: List[Dict]) -> List[int]:

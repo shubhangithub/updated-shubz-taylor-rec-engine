@@ -58,6 +58,7 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
             if len(cross_results) < limit: cross_results.append(entry)
         if len(taylor_results) >= limit and len(cross_results) >= limit: break
 
-    from app.engines.utils import interleave_results, diversify_results
-    diversified = diversify_results(taylor_results + cross_results, temperature=0.25)
+    from app.engines.utils import interleave_results, diversify_results, filter_seed_variants
+    combined = filter_seed_variants(taylor_results + cross_results, song_names)
+    diversified = diversify_results(combined, temperature=0.25)
     return interleave_results(diversified, limit)

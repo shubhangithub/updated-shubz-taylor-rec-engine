@@ -2,7 +2,7 @@ import { ConstellationStar, TaylorSong } from './types';
 
 // Each era gets a cluster position in 3D space, arranged in a spiral
 // Balanced spiral — not too tight, not too spread
-const ERA_CLUSTER_CENTERS: Record<string, [number, number, number]> = {
+export const ERA_CLUSTER_CENTERS: Record<string, [number, number, number]> = {
   'Taylor Swift': [-10, 1, -5],
   'Fearless': [-7, 4, -1],
   'Speak Now': [-3, 6, 2],

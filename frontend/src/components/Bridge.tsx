@@ -35,6 +35,7 @@ function ConnectionBeam({ color1, color2 }: { color1: string; color2: string }) 
     const width = canvas.offsetWidth;
     const height = canvas.offsetHeight;
     let frame = 0;
+    let rafId = 0;
 
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
@@ -83,11 +84,11 @@ function ConnectionBeam({ color1, color2 }: { color1: string; color2: string }) 
         ctx.fill();
       }
 
-      requestAnimationFrame(animate);
+      rafId = requestAnimationFrame(animate);
     };
 
-    const animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
   }, [color1, color2]);
 
   return (

@@ -149,4 +149,4 @@ export interface EngineStats {
 
 export type Mood = 'heartbreak' | 'euphoria' | 'melancholy' | 'rage' | 'nostalgia' | 'romantic' | 'empowerment' | 'introspective';
 
-export type Era = 'Taylor Swift' | 'Fearless' | 'Speak Now' | 'Red' | '1989' | 'reputation' | 'Lover' | 'folklore' | 'evermore' | 'Midnights' | 'The Tortured Poets Department';
+export type Era = 'Taylor Swift' | 'Fearless' | 'Speak Now' | 'Red' | '1989' | 'reputation' | 'Lover' | 'folklore' | 'evermore' | 'Midnights' | 'The Tortured Poets Department' | 'The Life Of A Showgirl';

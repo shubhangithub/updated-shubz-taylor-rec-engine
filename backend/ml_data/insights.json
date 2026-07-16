@@ -307,9 +307,9 @@
       }
     ],
     "total_embedding_dimensions": 2112,
-    "total_songs_covered": 801,
-    "cross_artist_songs": 460,
-    "finding": "The 8 engines span 2112 embedding dimensions across 801 songs. Every embedding engine except Graph Node2Vec (whose graph covers the Taylor songs with audio features) recommends across the full 47-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
+    "total_songs_covered": 1057,
+    "cross_artist_songs": 716,
+    "finding": "The 8 engines span 2112 embedding dimensions across 1057 songs. Every embedding engine except Graph Node2Vec (whose graph covers the Taylor songs with audio features) recommends across the full 81-artist corpus; the ensemble adds human-curated editorial explanations on top. Consensus recommendations (songs found by 4+ engines) are robust, while single-engine discoveries represent serendipitous finds.",
     "methodology": "Each engine ranks songs by similarity to a seed; displayed lists are similarity-weighted samples (temperature 0.25) with a cross-artist quota, so they vary between queries. Consensus counts how many engines include a given song in their displayed results. High consensus = reliable match. Low consensus but high individual score = serendipitous discovery."
   },
   "songwriting_density": {

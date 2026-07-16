@@ -1,4 +1,6 @@
-"""Runtime engine for Node2Vec graph embeddings."""
+"""Runtime engine for Node2Vec graph embeddings (multi-artist).
+64-dim structural embeddings over the full Taylor + cross-artist corpus;
+see ml/compute_graph_embeddings.py."""
 import json
 import os
 import numpy as np
@@ -25,7 +27,9 @@ def _load():
         return
     _embeddings = np.load(emb_path)
     with open(idx_path) as f:
-        _index = json.load(f)
+        raw = json.load(f)
+    # Accept both the old list-of-names format and the new {name, artist} dicts
+    _index = [e if isinstance(e, dict) else {'name': e, 'artist': 'Taylor Swift'} for e in raw]
     logger.info(f"Loaded graph embeddings: {_embeddings.shape}")
 
 def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
@@ -33,36 +37,41 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
     if _embeddings is None or len(_embeddings) == 0:
         return []
 
-    name_lower = {n.lower(): i for i, n in enumerate(_index)}
-    seed_indices = [name_lower[n.lower()] for n in song_names if n.lower() in name_lower]
-
+    from app.engines.utils import resolve_seed_indices
+    seed_indices = resolve_seed_indices(song_names, _index)
     if not seed_indices:
         return []
 
     seed_emb = np.mean(_embeddings[seed_indices], axis=0, keepdims=True)
-
     norms = np.linalg.norm(_embeddings, axis=1, keepdims=True)
     norms[norms == 0] = 1
     normalized = _embeddings / norms
     seed_norm = seed_emb / max(np.linalg.norm(seed_emb), 1e-8)
-
     sims = (normalized @ seed_norm.T).flatten()
 
-    ranked = np.argsort(-sims)
     results = []
-    for idx in ranked:
+    seen = set()
+    for idx in np.argsort(-sims):
         if idx in seed_indices:
             continue
+        if not _embeddings[idx].any():  # nodes that never appeared in a walk
+            continue
+        e = _index[idx]
+        dedup_key = (e['name'].lower(), e.get('artist', 'Taylor Swift').lower())
+        if dedup_key in seen:
+            continue
+        seen.add(dedup_key)
         results.append({
-            'name': _index[idx],
-            'artist': 'Taylor Swift',
+            'name': e['name'],
+            'artist': e.get('artist', 'Taylor Swift'),
             'similarity': round(float(sims[idx]), 4),
             'recommendation_type': 'graph_node2vec',
-            'explanation': f"Graph structural similarity: {round(float(sims[idx])*100)}% (64-dim Node2Vec embedding from biased random walks)",
+            'explanation': f"Graph structural similarity: cosine {round(float(sims[idx]), 2)} (64-dim node2vec embedding from biased random walks)",
         })
-        if len(results) >= limit:
+        if len(results) >= limit * 3:
             break
 
-    from app.engines.utils import diversify_results, filter_seed_variants
+    from app.engines.utils import interleave_results, diversify_results, filter_seed_variants
     results = filter_seed_variants(results, song_names)
-    return diversify_results(results, temperature=0.25)
+    diversified = diversify_results(results, temperature=0.25)
+    return interleave_results(diversified, limit)

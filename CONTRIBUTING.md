@@ -67,6 +67,16 @@ When a new album drops, all ten of these files need updating:
 
 The engine discovers connections between Taylor and other artists through shared lyrical meaning.
 
+Two paths — a keyed Genius scraper, or a tokenless gatherer:
+
+**Tokenless (no API key):** `ml/gather_songs.py` discovers songs + 30s previews
+via the iTunes Search API and pulls lyrics from lyrics.ovh. It gathers the
+editorial-bridge target songs plus a curated list of Taylor-connected artists:
+```bash
+cd backend && python -m ml.gather_songs
+```
+
+**Genius (keyed, higher lyric coverage):**
 1. Set your Genius API token: `export GENIUS_ACCESS_TOKEN=your_token`
 2. Run the scraper for a new artist:
    ```bash

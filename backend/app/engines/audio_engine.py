@@ -34,7 +34,14 @@ def _load_moods():
     phr_path = os.path.join(ML_DATA, 'mood_phrases.json')
     if not os.path.exists(vec_path) or not os.path.exists(phr_path):
         _mood_vecs = np.array([]); _moods = []; return
-    _mood_vecs = np.load(vec_path)
+    vecs = np.load(vec_path)
+    # Mean-center across moods to cancel CLAP's audio-text modality gap: raw
+    # audio-text cosines are dominated by the shared "this is text" direction,
+    # so every mood ranks songs almost identically. Centering leaves each mood's
+    # DEVIATION from the average prompt, which is what actually discriminates.
+    vecs = vecs - vecs.mean(axis=0, keepdims=True)
+    vecs = vecs / np.clip(np.linalg.norm(vecs, axis=1, keepdims=True), 1e-8, None)
+    _mood_vecs = vecs
     with open(phr_path) as f:
         _moods = json.load(f)['moods']
 

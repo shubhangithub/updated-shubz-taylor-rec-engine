@@ -86,6 +86,11 @@ def main():
     embeddings = np.zeros((N, 512), dtype=np.float32)
     embedded, skipped = 0, 0
     win = WINDOW_SECONDS * SAMPLE_RATE
+    # get_audio_features returns pre-projection features in transformers 5.x;
+    # the full forward() returns properly projected joint-space audio_embeds
+    # (comparable to text_embeds). We pass one throwaway text to satisfy the
+    # joint forward and read only audio_embeds.
+    DUMMY_TEXT = "music"
 
     from ml.download_previews import preview_filename
     for i, e in enumerate(index):
@@ -104,22 +109,16 @@ def main():
         windows = [audio[s:s + win] for s in range(0, len(audio), win)]
         windows = [w for w in windows if len(w) > SAMPLE_RATE]
         try:
-            inputs = processor(audios=windows, sampling_rate=SAMPLE_RATE, return_tensors='pt')
+            inputs = processor(text=[DUMMY_TEXT], audio=windows,
+                               sampling_rate=SAMPLE_RATE, return_tensors='pt', padding=True)
             inputs = {k: v.to(device) for k, v in inputs.items()}
             with torch.no_grad():
-                feats = model.get_audio_features(**inputs)  # (n_windows, 512)
-            vec = feats.mean(dim=0).cpu().numpy()
+                out = model(**inputs)
+            vec = out.audio_embeds.mean(dim=0).cpu().numpy()  # (512,) joint space
         except Exception as ex:
-            if device == 'mps':  # one-shot CPU fallback
-                model.to('cpu'); device = 'cpu'
-                inputs = processor(audios=windows, sampling_rate=SAMPLE_RATE, return_tensors='pt')
-                with torch.no_grad():
-                    feats = model.get_audio_features(**inputs)
-                vec = feats.mean(dim=0).cpu().numpy()
-            else:
-                print(f"  embed failed for {e['name']!r}: {ex}", flush=True)
-                skipped += 1
-                continue
+            print(f"  embed failed for {e['name']!r}: {ex}", flush=True)
+            skipped += 1
+            continue
         norm = np.linalg.norm(vec)
         if norm > 0:
             embeddings[i] = vec / norm
@@ -136,13 +135,15 @@ def main():
         json.dump(audio_index, f)
     print(f"Audio embeddings: {embedded} embedded, {skipped} without audio -> audio_embeddings.npy", flush=True)
 
-    # Mood prompts through the text tower (joint space -> cosine against audio)
+    # Mood prompts into the SAME joint space via forward() (one throwaway audio
+    # window to satisfy the joint forward; we read only text_embeds).
     moods = list(MOOD_PROMPTS)
-    text_inputs = processor(text=[MOOD_PROMPTS[m] for m in moods], return_tensors='pt', padding=True)
+    dummy_audio = [np.zeros(WINDOW_SECONDS * SAMPLE_RATE, dtype=np.float32)]
+    text_inputs = processor(text=[MOOD_PROMPTS[m] for m in moods], audio=dummy_audio,
+                            sampling_rate=SAMPLE_RATE, return_tensors='pt', padding=True)
     text_inputs = {k: v.to(device) for k, v in text_inputs.items()}
-    import torch as _t
-    with _t.no_grad():
-        tfeats = model.get_text_features(**text_inputs).cpu().numpy()
+    with torch.no_grad():
+        tfeats = model(**text_inputs).text_embeds.cpu().numpy()
     tfeats = tfeats / np.clip(np.linalg.norm(tfeats, axis=1, keepdims=True), 1e-8, None)
     np.save(os.path.join(OUT_DIR, 'mood_text_embeddings.npy'), tfeats.astype(np.float32))
     with open(os.path.join(OUT_DIR, 'mood_phrases.json'), 'w') as f:

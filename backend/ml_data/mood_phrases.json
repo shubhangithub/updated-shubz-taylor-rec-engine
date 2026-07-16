@@ -1,0 +1,22 @@
+{
+ "moods": [
+  "heartbreak",
+  "euphoria",
+  "melancholy",
+  "rage",
+  "nostalgia",
+  "romantic",
+  "empowerment",
+  "introspective"
+ ],
+ "prompts": {
+  "heartbreak": "a devastated heartbroken ballad, aching vocals over sparse piano",
+  "euphoria": "a euphoric bright dance-pop anthem, soaring synths and driving beat",
+  "melancholy": "a slow melancholic wistful song, soft muted instrumentation",
+  "rage": "an angry aggressive track, distorted guitars and pounding drums",
+  "nostalgia": "a warm nostalgic acoustic song that sounds like an old memory",
+  "romantic": "a tender romantic love song, intimate vocals and gentle strings",
+  "empowerment": "a confident empowering anthem with a strutting beat and bold vocals",
+  "introspective": "a quiet introspective confessional song, close-mic vocals and space"
+ }
+}

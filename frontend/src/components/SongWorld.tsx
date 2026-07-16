@@ -595,7 +595,9 @@ function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songN
     fetch(`${url}/api/lyrics-sync/${encodeURIComponent(songName)}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.line_timings?.length > 2) {
+        // Skip low-confidence alignments — showing timings Whisper couldn't
+        // align is worse than plain lyrics.
+        if (data?.line_timings?.length > 2 && !data.low_confidence) {
           const merged = mergeFragments(data.line_timings);
           syncTimingsRef.current = merged;
           // start_line tells us which line of the full lyrics the preview snippet begins at

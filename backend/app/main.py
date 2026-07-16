@@ -736,15 +736,23 @@ def get_lyrics_sync(song_name: str):
         else:
             _lyrics_sync = {}
 
-    data = _lyrics_sync.get(song_name.lower())
-    if not data:
-        # Try fuzzy match
+    q = song_name.strip().lower()
+    data = _lyrics_sync.get(q)
+    if not data and len(q) >= 4:
+        # Guarded fuzzy match: prefer the most specific (longest) key, so a
+        # short query can't grab an unrelated song's timings.
+        best_key, best_len = None, -1
         for key in _lyrics_sync:
-            if song_name.lower() in key or key in song_name.lower():
-                data = _lyrics_sync[key]
-                break
+            if (q in key or key in q) and len(key) > best_len:
+                best_key, best_len = key, len(key)
+        if best_key:
+            data = _lyrics_sync[best_key]
 
     if not data:
         raise HTTPException(status_code=404, detail=f"No sync data for '{song_name}'")
 
+    # Flag low-confidence alignments so the client can fall back to unsynced
+    # lyrics instead of showing timings Whisper couldn't actually align.
+    data = dict(data)
+    data["low_confidence"] = data.get("alignment_score", 0) < 8
     return data

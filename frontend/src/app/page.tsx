@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import VaultDoor from '@/components/VaultDoor';
@@ -293,8 +293,14 @@ export default function Home() {
 
   const canGoBack = viewHistory.length > 0 && currentView !== 'vault' && currentView !== 'constellation';
 
+  // Monotonic id so a slow earlier load can't overwrite a newer selection
+  // (two quick song clicks previously raced).
+  const loadSeqRef = useRef(0);
+
   // Shared helper: load full song data from API
   const loadSongData = useCallback(async (songName: string, fallbackAlbum?: string) => {
+    const seq = ++loadSeqRef.current;
+    const isStale = () => seq !== loadSeqRef.current;
     try {
       // First try the dedicated song-data endpoint (has features + lyrics from dataset)
       const dataRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/song-data/${encodeURIComponent(songName)}`);
@@ -360,6 +366,7 @@ export default function Home() {
         } catch {
           setEditorialBridges([]);
         }
+        if (isStale()) return merged;
         setSelectedSong(merged);
         setRecommendations([]);
         return merged;
@@ -391,6 +398,7 @@ export default function Home() {
           key_mode: localData.key_mode,
           explicit: localData.explicit,
         };
+        if (isStale()) return song;
         setSelectedSong(song);
         // Get ML-computed cross-artist recommendations instead of hardcoded bridges
         try {
@@ -427,6 +435,7 @@ export default function Home() {
     }
 
     // Final fallback
+    if (isStale()) return null;
     setSelectedSong({
       id: `fallback-${songName}`,
       name: songName,

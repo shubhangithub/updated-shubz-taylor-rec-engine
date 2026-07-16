@@ -278,10 +278,16 @@ export default function Home() {
   }, []);
 
   // Navigation
+  // Keep a ref to the current view so navigateTo can stay identity-stable.
+  // (When it depended on currentView it changed on every navigation, which
+  // re-triggered the guided tour's current step.)
+  const currentViewRef = useRef(currentView);
+  useEffect(() => { currentViewRef.current = currentView; }, [currentView]);
+
   const navigateTo = useCallback((view: View) => {
-    setViewHistory(prev => [...prev, currentView]);
+    setViewHistory(prev => [...prev, currentViewRef.current]);
     setCurrentView(view);
-  }, [currentView]);
+  }, []);
 
   const goBack = useCallback(() => {
     const prev = viewHistory[viewHistory.length - 1];

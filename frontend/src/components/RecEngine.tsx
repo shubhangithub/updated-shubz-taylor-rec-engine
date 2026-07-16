@@ -39,7 +39,7 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     icon: <Zap size={16} />,
     color: '#E53E3E',
     description: '384-dim semantic lyric embeddings',
-    longDesc: 'Encodes all 1,057 song lyrics (341 Taylor + 716 cross-artist) into 384-dimensional semantic vectors using all-MiniLM-L6-v2 (sentence-transformers). Finds songs with similar meaning — "heartbreak in autumn" matches even with no shared words. Paper: Reimers & Gurevych (2019) Sentence-BERT, EMNLP.',
+    longDesc: 'Encodes all 1,056 song lyrics (341 Taylor + 715 cross-artist) into 384-dimensional semantic vectors using all-MiniLM-L6-v2 (sentence-transformers). Finds songs with similar meaning — "heartbreak in autumn" matches even with no shared words. Paper: Reimers & Gurevych (2019) Sentence-BERT, EMNLP.',
   },
   {
     key: 'qwen3_embed',
@@ -47,7 +47,7 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     icon: <Zap size={16} />,
     color: '#38B2AC',
     description: '1024-dim modern lyric embeddings',
-    longDesc: 'The 2025-era counterpart to Transformer Lyrics: Qwen3-Embedding-0.6B encodes the FULL lyrics of all 1,057 songs (32K-token context — MiniLM truncates at 256 wordpieces, so it never sees bridges or outros). Same corpus, six years of encoder progress, side by side. Paper: Zhang et al. (2025) Qwen3 Embedding, arXiv:2506.05176.',
+    longDesc: 'The 2025-era counterpart to Transformer Lyrics: Qwen3-Embedding-0.6B encodes the FULL lyrics of all 1,056 songs (32K-token context — MiniLM truncates at 256 wordpieces, so it never sees bridges or outros). Same corpus, six years of encoder progress, side by side. Paper: Zhang et al. (2025) Qwen3 Embedding, arXiv:2506.05176.',
   },
   {
     key: 'clap_audio',
@@ -71,7 +71,7 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     icon: <Users size={16} />,
     color: '#48BB78',
     description: '64-dim graph structural embeddings',
-    longDesc: 'Builds a sparse MULTI-ARTIST song graph over all 1,057 songs (lyric-similarity backbone + audio, era, and editorial-bridge edges), runs second-order biased random walks (p=1, q=2), trains skip-gram Word2Vec to learn 64-dim structural embeddings. Surfaces cross-artist neighbours via multi-hop paths: "Song A → Song B → Song C". Paper: Grover & Leskovec (2016) node2vec, KDD.',
+    longDesc: 'Builds a sparse MULTI-ARTIST song graph over all 1,056 songs (lyric-similarity backbone + audio, era, and editorial-bridge edges), runs second-order biased random walks (p=1, q=2), trains skip-gram Word2Vec to learn 64-dim structural embeddings. Surfaces cross-artist neighbours via multi-hop paths: "Song A → Song B → Song C". Paper: Grover & Leskovec (2016) node2vec, KDD.',
   },
   {
     key: 'ncf',

@@ -29,7 +29,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'EMNLP 2019',
       summary: 'Introduces Sentence-BERT, which modifies the BERT architecture with siamese and triplet networks to derive semantically meaningful sentence embeddings that can be compared using cosine similarity. Prior to S-BERT, finding similar sentences required feeding both into BERT simultaneously — computationally prohibitive for large collections. S-BERT reduces inference from 65 hours to ~5 seconds for 10,000 sentences.',
       keyInsight: 'By fine-tuning BERT with siamese networks on NLI data, we get dense embeddings where cosine similarity correlates with semantic similarity. Two sentences about heartbreak will be close in embedding space even if they share zero words.',
-      howWeUseIt: 'We encode all 1,057 song lyrics (341 Taylor + 716 cross-artist) through all-MiniLM-L6-v2 into 384-dimensional vectors. Cosine similarity between vectors finds songs with similar MEANING — "All Too Well" matches Bon Iver\'s "Holocene" because both express nostalgic devastation, not because they share keywords.',
+      howWeUseIt: 'We encode all 1,056 song lyrics (341 Taylor + 715 cross-artist) through all-MiniLM-L6-v2 into 384-dimensional vectors. Cosine similarity between vectors finds songs with similar MEANING — "All Too Well" matches Bon Iver\'s "Holocene" because both express nostalgic devastation, not because they share keywords.',
       doi: '10.18653/v1/D19-1410',
     },
   ],
@@ -41,7 +41,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'ICLR 2014',
       summary: 'Introduces the Variational Autoencoder framework — a generative model that learns a compressed latent representation by jointly training an encoder (inference network) and decoder (generative network). The key innovation is the reparameterization trick that enables backpropagation through stochastic sampling. The loss combines reconstruction accuracy with KL divergence to regularize the latent space.',
       keyInsight: 'VAEs don\'t just compress — they learn a STRUCTURED latent space where nearby points decode to similar outputs. This means similarity in latent space captures deeper structural relationships than raw feature distance.',
-      howWeUseIt: 'We train a VAE on 1,057 songs\' 384-dim lyrics embeddings (z-scored per dimension). The encoder compresses 384→128→64→16 dimensions (24:1 compression ratio), with β=0.1 and KL warm-up so the posterior does not collapse. The 16-dim latent space captures non-linear structure that cosine similarity on raw embeddings misses.',
+      howWeUseIt: 'We train a VAE on 1,056 songs\' 384-dim lyrics embeddings (z-scored per dimension). The encoder compresses 384→128→64→16 dimensions (24:1 compression ratio), with β=0.1 and KL warm-up so the posterior does not collapse. The 16-dim latent space captures non-linear structure that cosine similarity on raw embeddings misses.',
     },
     {
       title: 'Hierarchical Variational Autoencoders for Music',
@@ -61,7 +61,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'KDD 2016 — ACM SIGKDD International Conference on Knowledge Discovery and Data Mining',
       summary: 'Introduces node2vec, a framework for learning continuous feature representations for nodes in networks. The key innovation is biased random walks controlled by parameters p (return parameter) and q (in-out parameter) that interpolate between BFS-like (structural) and DFS-like (community) exploration. These walks are fed into a Skip-gram Word2Vec model to learn embeddings that preserve network neighborhood structure.',
       keyInsight: 'By controlling the random walk bias, you can learn embeddings that capture EITHER structural roles (songs that occupy similar positions in the graph) OR community membership (songs that belong to the same tightly-connected cluster). We use q=2 to favor structural similarity.',
-      howWeUseIt: 'We build a sparse MULTI-ARTIST graph over all 1,057 songs (341 Taylor + 716 cross-artist): a lyric-similarity backbone (top-8 neighbours per song, ~7,300 edges) connects every artist, with audio-feature similarity and same-era edges among the Taylor songs and 141 hand-curated editorial-bridge edges linking Taylor directly to other artists. Node2Vec runs 15 second-order biased walks of length 40 per node with p=1, q=2, then trains skip-gram Word2Vec to learn 64-dim structural embeddings — so multi-hop paths (A→B→C) surface cross-artist neighbours, not just Taylor ones.',
+      howWeUseIt: 'We build a sparse MULTI-ARTIST graph over all 1,056 songs (341 Taylor + 715 cross-artist): a lyric-similarity backbone (top-8 neighbours per song, ~7,300 edges) connects every artist, with audio-feature similarity and same-era edges among the Taylor songs and 141 hand-curated editorial-bridge edges linking Taylor directly to other artists. Node2Vec runs 15 second-order biased walks of length 40 per node with p=1, q=2, then trains skip-gram Word2Vec to learn 64-dim structural embeddings — so multi-hop paths (A→B→C) surface cross-artist neighbours, not just Taylor ones.',
       doi: '10.1145/2939672.2939754',
     },
   ],
@@ -97,7 +97,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'ISMIR 2021 — International Society for Music Information Retrieval',
       summary: 'Introduces SimCLR to the music domain, operating on RAW AUDIO WAVEFORMS. Creates augmented views via a chain of polarity inversion, additive noise, gain, filtering, delay, pitch shift, and reverb, then trains a SampleCNN encoder plus projection head end-to-end with contrastive loss. Achieves competitive results on MagnaTagATune using only 1% of labeled data.',
       keyInsight: 'You don\'t need labels to learn music similarity. By teaching a model that two augmented versions of the same song should have similar representations, it learns what\'s ESSENTIAL about a song vs. what\'s surface noise.',
-      howWeUseIt: 'Inspiration, not an implementation: CLMR is raw-audio contrastive learning, and this engine never touches audio. We transplant its idea — contrastive learning for music similarity — to lyrics TEXT: augmented views via 20% word dropout, line shuffle, and section-header removal, with a projection head (384→128→64) trained with NT-Xent loss (τ=0.07) on 1,057 songs\' lyric embeddings.',
+      howWeUseIt: 'Inspiration, not an implementation: CLMR is raw-audio contrastive learning, and this engine never touches audio. We transplant its idea — contrastive learning for music similarity — to lyrics TEXT: augmented views via 20% word dropout, line shuffle, and section-header removal, with a projection head (384→128→64) trained with NT-Xent loss (τ=0.07) on 1,056 songs\' lyric embeddings.',
     },
     {
       title: 'A Simple Framework for Contrastive Learning of Visual Representations (SimCLR)',
@@ -117,7 +117,7 @@ const PAPERS: Record<string, Paper[]> = {
       venue: 'arXiv:2506.05176',
       summary: 'Builds text-embedding models on the Qwen3 foundation-model family via large-scale multi-stage contrastive training with LLM-synthesized pairs, model merging, and instruction-aware inputs. The 0.6B variant tops the small-model band of the MTEB leaderboard while remaining Apache-2.0 licensed and runnable on a laptop. Uses decoder-style last-token pooling with a 32K-token context, and Matryoshka representation learning for flexible output dimensions.',
       keyInsight: 'Embedding quality did not stop at 2019: six years of encoder progress (bigger pretraining, contrastive fine-tuning at scale, long context) shows up directly as better semantic neighbors — and long context means the model reads the WHOLE song, not the first verse.',
-      howWeUseIt: 'We encode the same 1,057-song corpus as Engine 1, but with full untruncated lyrics — MiniLM cuts off at 256 wordpieces (roughly the first verse and chorus), while Qwen3-Embedding-0.6B\'s 32K context reads every bridge and outro. 1024-dim vectors, plain cosine similarity at runtime. Running the 2019 and 2025 encoders side-by-side on identical data makes the encoder generation an observable variable.',
+      howWeUseIt: 'We encode the same 1,056-song corpus as Engine 1, but with full untruncated lyrics — MiniLM cuts off at 256 wordpieces (roughly the first verse and chorus), while Qwen3-Embedding-0.6B\'s 32K context reads every bridge and outro. 1024-dim vectors, plain cosine similarity at runtime. Running the 2019 and 2025 encoders side-by-side on identical data makes the encoder generation an observable variable.',
       doi: '10.48550/arXiv.2506.05176',
     },
   ],
@@ -367,7 +367,7 @@ function EngineStatsSection() {
     { value: stats.catalog_size.toString(), label: 'Total Catalog', suffix: ' songs' },
     { value: stats.songs_with_features.toString(), label: 'With Audio Features' },
     { value: stats.songs_with_lyrics.toString(), label: 'With Lyrics' },
-    { value: '1,057', label: 'Total Embeddings (Taylor + Cross-Artist)' },
+    { value: '1,056', label: 'Total Embeddings (Taylor + Cross-Artist)' },
     { value: stats.editorial_bridge_count.toString(), label: 'Editorial Bridges' },
     { value: stats.unique_bridge_artists.toString(), label: 'Cross-Artist Connections' },
     { value: '8', label: 'ML Engines' },
@@ -451,7 +451,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
       title: 'Engine 1: Transformer Semantic Lyrics',
       icon: <Zap size={18} />,
       color: '#E53E3E',
-      description: 'Encodes 1,057 song lyrics into 384-dimensional semantic vectors using Sentence-BERT (all-MiniLM-L6-v2). Finds songs with similar meaning across 81 artists — "All Too Well" matches Bon Iver\'s "Holocene" because both express nostalgic devastation, not because they share words.',
+      description: 'Encodes 1,056 song lyrics into 384-dimensional semantic vectors using Sentence-BERT (all-MiniLM-L6-v2). Finds songs with similar meaning across 81 artists — "All Too Well" matches Bon Iver\'s "Holocene" because both express nostalgic devastation, not because they share words.',
     },
     {
       id: 'engine-2-vae',
@@ -465,7 +465,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
       title: 'Engine 3: Graph Node2Vec',
       icon: <GitBranch size={18} />,
       color: '#48BB78',
-      description: 'Builds a sparse MULTI-ARTIST graph over all 1,057 songs — a lyric-similarity backbone connecting every artist, plus audio, era, and 141 editorial-bridge edges. Runs second-order biased random walks (p=1, q=2) and trains skip-gram Word2Vec to learn 64-dim structural embeddings that surface cross-artist neighbours via multi-hop paths.',
+      description: 'Builds a sparse MULTI-ARTIST graph over all 1,056 songs — a lyric-similarity backbone connecting every artist, plus audio, era, and 141 editorial-bridge edges. Runs second-order biased random walks (p=1, q=2) and trains skip-gram Word2Vec to learn 64-dim structural embeddings that surface cross-artist neighbours via multi-hop paths.',
     },
     {
       id: 'engine-4-ncf',
@@ -493,7 +493,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
       title: 'Engine 7: Qwen3 Modern Embeddings',
       icon: <Zap size={18} />,
       color: '#38B2AC',
-      description: 'Encodes the same 1,057-song corpus as Engine 1 with a 2025-era 0.6B-parameter embedding model (Qwen3-Embedding-0.6B, Apache 2.0). Its 32K-token context reads full lyrics — MiniLM truncates at 256 wordpieces — and produces 1024-dim vectors. A six-year encoder ablation, live in the UI.',
+      description: 'Encodes the same 1,056-song corpus as Engine 1 with a 2025-era 0.6B-parameter embedding model (Qwen3-Embedding-0.6B, Apache 2.0). Its 32K-token context reads full lyrics — MiniLM truncates at 256 wordpieces — and produces 1024-dim vectors. A six-year encoder ablation, live in the UI.',
     },
     {
       id: 'engine-8-clap',
@@ -554,7 +554,7 @@ export default function HowItWorks({ onBack }: { onBack: () => void }) {
           <div className="glass rounded-xl p-6">
             <div className="flex flex-col md:flex-row gap-4">
               {[
-                { step: '1', title: 'Data Collection', desc: '1,057 songs: 341 Taylor (CSV + Spotify), 716 cross-artist (Genius + tokenless iTunes/lyrics.ovh), 323 with audio features', color: '#E53E3E' },
+                { step: '1', title: 'Data Collection', desc: '1,056 songs: 341 Taylor (CSV + Spotify), 715 cross-artist (Genius + tokenless iTunes/lyrics.ovh), 323 with audio features', color: '#E53E3E' },
                 { step: '2', title: 'Pre-compute', desc: '7 ML models trained offline: MiniLM + Qwen3 lyric encoding, CLAP audio encoding, VAE (300 epochs), node2vec walks + Word2Vec, NCF MLP (200 epochs), contrastive head (100 epochs)', color: '#9F7AEA' },
                 { step: '3', title: 'Embedding Storage', desc: 'Pre-computed vectors saved as .npy files. Total: ~5MB. No GPU needed at runtime.', color: '#48BB78' },
                 { step: '4', title: 'Query Processing', desc: 'User selects seed songs → each engine computes similarity in its embedding space → results ranked and interleaved → <10ms per engine', color: '#5B9BD5' },

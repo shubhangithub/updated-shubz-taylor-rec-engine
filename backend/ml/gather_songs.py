@@ -35,6 +35,18 @@ LYRICS_SLEEP = 0.6
 TOP_TRACKS_PER_ARTIST = 10
 MIN_LYRICS_CHARS = 120
 
+# Non-lyric placeholders some source sites return (takedown notices, etc.).
+# lyrics.ovh occasionally passes these through verbatim — reject them.
+_JUNK_RE = re.compile(
+    r"removid[ao]|titular|licenciamento|letras\.mus|solicita[çc][ãa]o|"
+    r"lyrics? (not available|were removed|unavailable)|n[ãa]o (autoriz|dispon)|"
+    r"working to obtain|copyright holder", re.I)
+
+
+def is_real_lyrics(text: str) -> bool:
+    """Reject placeholder/takedown text masquerading as lyrics."""
+    return len(text) >= MIN_LYRICS_CHARS and not _JUNK_RE.search(text[:300])
+
 # Curated artists with a real line to Taylor (producers/collaborators/influences/
 # genre neighbors). Kept radial from Taylor so she stays the gravitational centre.
 CURATED_ARTISTS = [
@@ -102,7 +114,7 @@ def fetch_lyrics(artist: str, title: str) -> str:
                 if r.status_code == 200:
                     ly = (r.json().get("lyrics") or "").strip()
                     ly = re.sub(r"\r\n", "\n", ly)
-                    if len(ly) >= MIN_LYRICS_CHARS:
+                    if is_real_lyrics(ly):
                         return ly
             except Exception:
                 pass

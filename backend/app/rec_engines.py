@@ -40,7 +40,7 @@ def _init_engines():
     register_engine(
         key="lyrics_transformer",
         name="Transformer Lyrics",
-        description="384-dim sentence embeddings of song lyrics via all-MiniLM-L6-v2 (sentence-transformers). Finds songs with similar meaning, not just similar words. 1,057 songs across 81 artists (Taylor + 80 others).",
+        description="384-dim sentence embeddings of song lyrics via all-MiniLM-L6-v2 (sentence-transformers). Finds songs with similar meaning, not just similar words. 1,056 songs across 81 artists (Taylor + 80 others).",
         paper="Reimers & Gurevych (2019) 'Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks', EMNLP-IJCNLP",
         color="#E53E3E",
         fn=lambda song_names, song_ids, limit, **kw: lyrics_transformer.recommend(song_names, limit),
@@ -50,7 +50,7 @@ def _init_engines():
     register_engine(
         key="vae_latent",
         name="VAE Latent Space",
-        description="16-dim latent vectors from a beta-VAE (beta=0.1, KL warm-up) trained on the 384-dim lyrics embeddings. 24:1 compression captures non-linear semantic structure. 1,057 songs.",
+        description="16-dim latent vectors from a beta-VAE (beta=0.1, KL warm-up) trained on the 384-dim lyrics embeddings. 24:1 compression captures non-linear semantic structure. 1,056 songs.",
         paper="Kingma & Welling (2013) 'Auto-Encoding Variational Bayes', ICLR 2014",
         color="#9F7AEA",
         fn=lambda song_names, song_ids, limit, **kw: vae_engine.recommend(song_names, limit),
@@ -60,7 +60,7 @@ def _init_engines():
     register_engine(
         key="graph_node2vec",
         name="Graph Node2Vec",
-        description="64-dim embeddings from second-order biased random walks (p=1, q=2) on a sparse MULTI-ARTIST song graph over all 1,057 songs (lyric-similarity backbone + audio + era + editorial-bridge edges) — surfaces cross-artist neighbours, not just Taylor.",
+        description="64-dim embeddings from second-order biased random walks (p=1, q=2) on a sparse MULTI-ARTIST song graph over all 1,056 songs (lyric-similarity backbone + audio + era + editorial-bridge edges) — surfaces cross-artist neighbours, not just Taylor.",
         paper="Grover & Leskovec (2016) 'node2vec: Scalable Feature Learning for Networks', KDD",
         color="#48BB78",
         fn=lambda song_names, song_ids, limit, **kw: graph_engine.recommend(song_names, limit),
@@ -70,7 +70,7 @@ def _init_engines():
     register_engine(
         key="ncf",
         name="Neural Collaborative",
-        description="48-dim embeddings PCA-initialized from multi-modal features (384 lyrics + 9 audio) and fine-tuned by an MLP pair scorer on synthetic pairs (lyrics/audio similarity + editorial bridges). Adapts the paper's MLP interaction function to song-song pairs — no real users or listening data. 1,057 songs.",
+        description="48-dim embeddings PCA-initialized from multi-modal features (384 lyrics + 9 audio) and fine-tuned by an MLP pair scorer on synthetic pairs (lyrics/audio similarity + editorial bridges). Adapts the paper's MLP interaction function to song-song pairs — no real users or listening data. 1,056 songs.",
         paper="He et al. (2017) 'Neural Collaborative Filtering', WWW — adapted (MLP interaction function; no user-item data)",
         color="#5B9BD5",
         fn=lambda song_names, song_ids, limit, **kw: ncf_engine.recommend(song_names, limit),
@@ -90,7 +90,7 @@ def _init_engines():
     register_engine(
         key="contrastive",
         name="Contrastive SSL",
-        description="64-dim SimCLR-style projections: NT-Xent loss on augmented lyrics views over a frozen MiniLM encoder. Representations robust to word dropout and line reordering. 1,057 songs.",
+        description="64-dim SimCLR-style projections: NT-Xent loss on augmented lyrics views over a frozen MiniLM encoder. Representations robust to word dropout and line reordering. 1,056 songs.",
         paper="Chen et al. (2020) 'A Simple Framework for Contrastive Learning of Visual Representations' (SimCLR), ICML — inspired by Spijkervet & Burgoyne (2021) CLMR, ISMIR (raw audio)",
         color="#F687B3",
         fn=lambda song_names, song_ids, limit, **kw: contrastive_engine.recommend(song_names, limit),
@@ -100,7 +100,7 @@ def _init_engines():
     register_engine(
         key="qwen3_embed",
         name="Qwen3 Embeddings",
-        description="1024-dim Qwen3-Embedding-0.6B vectors of the full, untruncated lyrics (32K-token context vs MiniLM's 256 wordpieces). The 2025-era counterpart to Engine 1 — same corpus, six years of encoder progress. 1,057 songs.",
+        description="1024-dim Qwen3-Embedding-0.6B vectors of the full, untruncated lyrics (32K-token context vs MiniLM's 256 wordpieces). The 2025-era counterpart to Engine 1 — same corpus, six years of encoder progress. 1,056 songs.",
         paper="Zhang et al. (2025) 'Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models', arXiv:2506.05176",
         color="#38B2AC",
         fn=lambda song_names, song_ids, limit, **kw: qwen3_engine.recommend(song_names, limit),

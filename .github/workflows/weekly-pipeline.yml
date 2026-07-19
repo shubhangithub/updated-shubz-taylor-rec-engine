@@ -8,7 +8,9 @@ on:
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # 120 gives margin for the first (cache-populating) run; steady-state runs
+    # are ~15-20 min because embeddings are incremental (only new songs).
+    timeout-minutes: 120
     permissions:
       contents: write
 
@@ -39,12 +41,26 @@ jobs:
           path: ~/.cache/whisper
           key: whisper-base-v1
 
-      # Cache HuggingFace sentence-transformers model (~90MB)
-      - name: Cache HF model
+      # Cache ALL HuggingFace models (MiniLM ~90MB + Qwen3 ~1.2GB + CLAP ~776MB).
+      # New key so the cache re-populates with all three (the old key only had
+      # MiniLM); restore-keys lets a run start from the latest partial cache.
+      - name: Cache HF models
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-all-MiniLM-L6-v2-v1
+          key: hf-models-v3
+          restore-keys: |
+            hf-models-
+
+      # Cache the 30s preview clips so CLAP only downloads NEW songs' previews
+      # each week (they're gitignored, so otherwise every run re-fetches ~1,000).
+      - name: Cache audio previews
+        uses: actions/cache@v4
+        with:
+          path: backend/ml_data/previews
+          key: previews-v1-${{ github.run_id }}
+          restore-keys: |
+            previews-v1-
 
       # Install ffmpeg for Whisper audio processing
       - name: Install ffmpeg

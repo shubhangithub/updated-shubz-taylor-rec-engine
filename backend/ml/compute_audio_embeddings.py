@@ -61,50 +61,83 @@ def decode_preview(path: str) -> np.ndarray | None:
     return audio if len(audio) > SAMPLE_RATE else None  # require >1s
 
 
+def _ensure_preview(name, artist, url_cache):
+    """Return a local preview path for a song, downloading on demand. None if unavailable."""
+    import requests
+    from ml.download_previews import preview_filename
+    path = os.path.join(PREVIEW_DIR, preview_filename(name, artist))
+    if os.path.exists(path) and os.path.getsize(path) > 10_000:
+        return path
+    url = url_cache.get(f"{name}|||{artist}".lower())
+    if not url:
+        return None
+    try:
+        r = requests.get(url, timeout=20)
+        if r.status_code == 200 and len(r.content) > 10_000:
+            os.makedirs(PREVIEW_DIR, exist_ok=True)
+            with open(path, 'wb') as f:
+                f.write(r.content)
+            return path
+    except Exception:
+        pass
+    return None
+
+
 def main():
     import torch
     from transformers import ClapModel, ClapProcessor
+    from ml.embed_utils import load_embedding_cache
 
     with open(os.path.join(OUT_DIR, 'lyrics_index.json')) as f:
         index = json.load(f)
     N = len(index)
 
-    print(f"Loading {MODEL_ID}...", flush=True)
-    model = ClapModel.from_pretrained(MODEL_ID)
-    processor = ClapProcessor.from_pretrained(MODEL_ID)
-    model.eval()
+    # Incremental: reuse existing CLAP embeddings, embed only NEW songs. This is
+    # what makes the weekly CI run affordable — the model download + full
+    # re-embed of ~1,000 songs was the timeout culprit.
+    cache = load_embedding_cache(os.path.join(OUT_DIR, 'audio_embeddings.npy'),
+                                 os.path.join(OUT_DIR, 'audio_index.json'), expected_dim=512)
+    def key(e): return (e['name'].lower(), e.get('artist', 'Taylor Swift').lower())
+    new_songs = [e for e in index if key(e) not in cache]
+    mood_path = os.path.join(OUT_DIR, 'mood_text_embeddings.npy')
+    need_moods = not os.path.exists(mood_path)
+    print(f"CLAP: {len(index)} songs, {len(new_songs)} new to embed, {len(cache)} cached; moods_needed={need_moods}", flush=True)
 
-    device = 'cpu'
-    if torch.backends.mps.is_available():
-        try:  # HTSAT mostly runs on MPS; fall back if any op is unsupported
-            model.to('mps')
-            device = 'mps'
-        except Exception:
-            model.to('cpu')
-    print(f"Device: {device}", flush=True)
+    url_cache = {}
+    up = os.path.join(OUT_DIR, 'preview_urls.json')
+    if os.path.exists(up):
+        url_cache = json.load(open(up))
 
     embeddings = np.zeros((N, 512), dtype=np.float32)
-    embedded, skipped = 0, 0
-    win = WINDOW_SECONDS * SAMPLE_RATE
-    # get_audio_features returns pre-projection features in transformers 5.x;
-    # the full forward() returns properly projected joint-space audio_embeds
-    # (comparable to text_embeds). We pass one throwaway text to satisfy the
-    # joint forward and read only audio_embeds.
-    DUMMY_TEXT = "music"
+    for i, e in enumerate(index):  # fill from cache
+        if key(e) in cache:
+            embeddings[i] = cache[key(e)]
 
-    from ml.download_previews import preview_filename
-    for i, e in enumerate(index):
-        path = os.path.join(PREVIEW_DIR, preview_filename(e['name'], e['artist']))
-        # Back-compat: fall back to the old positional filename if present
-        if not os.path.exists(path):
-            legacy = os.path.join(PREVIEW_DIR, f"{i}.m4a")
-            path = legacy if os.path.exists(legacy) else path
-        if not os.path.exists(path):
-            skipped += 1
+    model = processor = device = None
+    win = WINDOW_SECONDS * SAMPLE_RATE
+    DUMMY_TEXT = "music"  # forward() needs a text input; we read only audio_embeds
+    embedded = 0
+
+    if new_songs or need_moods:
+        print(f"Loading {MODEL_ID}...", flush=True)
+        model = ClapModel.from_pretrained(MODEL_ID)
+        processor = ClapProcessor.from_pretrained(MODEL_ID)
+        model.eval()
+        device = 'cpu'
+        if torch.backends.mps.is_available():
+            try:
+                model.to('mps'); device = 'mps'
+            except Exception:
+                model.to('cpu')
+        print(f"Device: {device}", flush=True)
+
+    pos = {key(e): i for i, e in enumerate(index)}
+    for j, e in enumerate(new_songs):
+        path = _ensure_preview(e['name'], e.get('artist', 'Taylor Swift'), url_cache)
+        if not path:
             continue
         audio = decode_preview(path)
         if audio is None:
-            skipped += 1
             continue
         windows = [audio[s:s + win] for s in range(0, len(audio), win)]
         windows = [w for w in windows if len(w) > SAMPLE_RATE]
@@ -114,17 +147,16 @@ def main():
             inputs = {k: v.to(device) for k, v in inputs.items()}
             with torch.no_grad():
                 out = model(**inputs)
-            vec = out.audio_embeds.mean(dim=0).cpu().numpy()  # (512,) joint space
+            vec = out.audio_embeds.mean(dim=0).cpu().numpy()
         except Exception as ex:
             print(f"  embed failed for {e['name']!r}: {ex}", flush=True)
-            skipped += 1
             continue
         norm = np.linalg.norm(vec)
         if norm > 0:
-            embeddings[i] = vec / norm
+            embeddings[pos[key(e)]] = vec / norm
             embedded += 1
-        if (i + 1) % 50 == 0:
-            print(f"  [{i+1}/{N}] embedded={embedded} skipped={skipped}", flush=True)
+        if (j + 1) % 25 == 0:
+            print(f"  new [{j+1}/{len(new_songs)}] embedded={embedded}", flush=True)
 
     np.save(os.path.join(OUT_DIR, 'audio_embeddings.npy'), embeddings)
     audio_index = [
@@ -133,7 +165,12 @@ def main():
     ]
     with open(os.path.join(OUT_DIR, 'audio_index.json'), 'w') as f:
         json.dump(audio_index, f)
-    print(f"Audio embeddings: {embedded} embedded, {skipped} without audio -> audio_embeddings.npy", flush=True)
+    total_audio = sum(1 for i in range(N) if embeddings[i].any())
+    print(f"Audio embeddings: {embedded} newly embedded, {total_audio}/{N} with audio -> audio_embeddings.npy", flush=True)
+
+    if not need_moods:
+        print("Mood embeddings unchanged (already present).", flush=True)
+        return
 
     # Mood prompts into the SAME joint space via forward() (one throwaway audio
     # window to satisfy the joint forward; we read only text_embeds).

@@ -54,26 +54,34 @@ def main():
     else:
         print("No cross-artist lyrics found. Run: python -m ml.scrape_artist_lyrics")
 
-    print(f"Total songs to encode: {len(all_songs)}")
+    print(f"Total songs in corpus: {len(all_songs)}")
 
-    device = 'mps' if torch.backends.mps.is_available() else 'cpu'
-    print(f"Encoding on {device} with {MODEL_ID}...")
-    model = SentenceTransformer(MODEL_ID, device=device)
+    # Incremental: reuse existing embeddings, encode only new songs (the Qwen3
+    # model download + full re-encode is what timed the CI job out).
+    from ml.embed_utils import load_embedding_cache, assemble_incremental
+    npy_path = os.path.join(OUT_DIR, 'qwen3_embeddings.npy')
+    idx_path = os.path.join(OUT_DIR, 'qwen3_index.json')
+    cache = load_embedding_cache(npy_path, idx_path, expected_dim=1024)
 
-    # Song-to-song similarity is symmetric document matching, so plain
-    # encode() (no instruction prompt) is used for all texts.
-    lyrics_texts = [s['lyrics'] for s in all_songs]
-    embeddings = model.encode(lyrics_texts, show_progress_bar=True, batch_size=8)
+    _model = {}
+    def encode_new(new_songs):
+        if 'm' not in _model:
+            device = 'mps' if torch.backends.mps.is_available() else 'cpu'
+            print(f"Encoding {len(new_songs)} new songs on {device} with {MODEL_ID} (reusing {len(cache)} cached)...")
+            _model['m'] = SentenceTransformer(MODEL_ID, device=device)
+        # Plain encode() (no instruction prompt) — symmetric doc matching.
+        return _model['m'].encode([s['lyrics'] for s in new_songs], show_progress_bar=True, batch_size=8)
+
+    embeddings, n_new = assemble_incremental(all_songs, cache, encode_new, dim=1024)
 
     # Save
     os.makedirs(OUT_DIR, exist_ok=True)
-    np.save(os.path.join(OUT_DIR, 'qwen3_embeddings.npy'), embeddings.astype(np.float32))
-
+    np.save(npy_path, embeddings.astype(np.float32))
     index = [{'name': s['name'], 'artist': s['artist']} for s in all_songs]
-    with open(os.path.join(OUT_DIR, 'qwen3_index.json'), 'w') as f:
+    with open(idx_path, 'w') as f:
         json.dump(index, f)
 
-    print(f"Saved {embeddings.shape} embeddings to ml_data/")
+    print(f"Saved {embeddings.shape} embeddings to ml_data/ ({n_new} newly encoded)")
     print(f"  Taylor songs: {sum(1 for s in index if s['artist'] == 'Taylor Swift')}")
     print(f"  Cross-artist: {sum(1 for s in index if s['artist'] != 'Taylor Swift')}")
 

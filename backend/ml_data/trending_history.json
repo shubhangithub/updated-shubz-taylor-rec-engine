@@ -6257,11 +6257,555 @@
         "new_count": 0,
         "dropped_count": 0
       }
+    },
+    {
+      "date": "2026-07-19",
+      "song_count": 48,
+      "songs": [
+        {
+          "name": "The Fate of Ophelia",
+          "album": "The Life of a Showgirl",
+          "track_id": 1833328840,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4b/07/28/4b07285f-b50c-7aff-cb40-2d732256b703/mzaf_16739866530441939982.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/2d/46/e0/2d46e0bc-8ab9-85dd-4b56-ee6951351034/25UM1IM19577.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T12:00:00Z",
+          "track_price": null,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Cruel Summer",
+          "album": "Lover",
+          "track_id": 1468058171,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/af/81/44af8168-9609-1b85-5048-ada08dceacf3/mzaf_1341699644335558812.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "You Belong With Me",
+          "album": "Fearless (Platinum Edition)",
+          "track_id": 1452859427,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/15/6a/e0/156ae0e7-2a35-e1c1-3ebc-c1c837651a50/mzaf_18380354397720038617.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/59/dc/cb/59dccbb0-73f9-701e-7b5b-58c902ddfe68/09UMDIM00338.rgb.jpg/100x100bb.jpg",
+          "release_date": "2008-11-11T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 12,
+          "genre": "Country"
+        },
+        {
+          "name": "Opalite",
+          "album": "The Life of a Showgirl",
+          "track_id": 1833328845,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/69/ea/d8/69ead898-7583-9bca-8be9-5f4e2140783f/mzaf_6210909912602321477.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/2d/46/e0/2d46e0bc-8ab9-85dd-4b56-ee6951351034/25UM1IM19577.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T12:00:00Z",
+          "track_price": null,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Love Story",
+          "album": "Fearless (Platinum Edition)",
+          "track_id": 1452859410,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c0/97/7c/c0977c44-63ae-ed3e-59fb-1c247a7fa4b0/mzaf_5342803791766217012.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/59/dc/cb/59dccbb0-73f9-701e-7b5b-58c902ddfe68/09UMDIM00338.rgb.jpg/100x100bb.jpg",
+          "release_date": "2008-09-12T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Country"
+        },
+        {
+          "name": "Shake It Off",
+          "album": "1989",
+          "track_id": 1440936016,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/04/86/32/048632f7-a5c5-0f5d-6213-a9e89c3a99b3/mzaf_8458239339293825693.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-08-19T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "Bad Blood",
+          "album": "1989",
+          "track_id": 1440936028,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/29/0c/b6/290cb6f1-ddc6-a36c-e120-753c175152d8/mzaf_9436312145049158466.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 8,
+          "genre": "Pop"
+        },
+        {
+          "name": "Wildest Dreams",
+          "album": "1989",
+          "track_id": 1440936036,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d0/91/84/d0918464-ed0d-eed2-89bd-1d3b2ebe85c5/mzaf_5128468383438758741.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "Style",
+          "album": "1989",
+          "track_id": 1440935812,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e7/97/e5/e797e534-4b92-1ede-116f-78565732fb8b/mzaf_6239584281452429330.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "I Knew You Were Trouble",
+          "album": "Red",
+          "track_id": 1440935349,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c4/bf/06/c4bf0627-2238-8705-f712-167e1cc95a7d/mzaf_2642564076851602245.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/25/0d/7e/250d7e42-3a2f-19ac-f865-f1e04a4a1f97/12UMDIM01007.rgb.jpg/100x100bb.jpg",
+          "release_date": "2012-10-09T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Country"
+        },
+        {
+          "name": "You Need To Calm Down",
+          "album": "Lover",
+          "track_id": 1468058704,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e8/80/4f/e8804fa1-6118-74fd-4602-b96969ebef41/mzaf_5457103975229379192.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-06-14T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 14,
+          "genre": "Pop"
+        },
+        {
+          "name": "Our Song",
+          "album": "Taylor Swift (Bonus Track Version)",
+          "track_id": 1440914010,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/49/22/e5/4922e538-7172-1f13-7b98-673915553bdd/mzaf_16010520491370125418.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/be/e1/48/bee148d6-d16c-d8f7-0173-d6cf6d684aa1/08PNDIM00678.rgb.jpg/100x100bb.jpg",
+          "release_date": "2006-10-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 11,
+          "genre": "Country"
+        },
+        {
+          "name": "22",
+          "album": "Red",
+          "track_id": 1440935562,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/95/e7/bb/95e7bb40-f0e3-11c1-08d4-73626d8d8e94/mzaf_6190233390504127357.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/25/0d/7e/250d7e42-3a2f-19ac-f865-f1e04a4a1f97/12UMDIM01007.rgb.jpg/100x100bb.jpg",
+          "release_date": "2012-10-22T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Country"
+        },
+        {
+          "name": "Lover",
+          "album": "Lover",
+          "track_id": 1468058173,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e0/db/47/e0db47b0-7f70-0631-0414-cd4777d2fb3e/mzaf_6362891154838442638.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-16T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Blank Space",
+          "album": "1989",
+          "track_id": 1440935808,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/97/b4/f6/97b4f65f-f334-771c-a4f5-5e7b9b42634f/mzaf_17056874752218225925.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "We Are Never Ever Getting Back Together",
+          "album": "Red",
+          "track_id": 1440935564,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d6/c8/64/d6c864a4-4bae-ee81-be9e-ef0beb97ccb1/mzaf_8891089632729595012.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/25/0d/7e/250d7e42-3a2f-19ac-f865-f1e04a4a1f97/12UMDIM01007.rgb.jpg/100x100bb.jpg",
+          "release_date": "2012-08-13T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 8,
+          "genre": "Country"
+        },
+        {
+          "name": "...Ready For It?",
+          "album": "reputation",
+          "track_id": 1440934248,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ec/4c/66/ec4c6665-6fdd-e31f-984d-60ab919e865b/mzaf_11118961438428757175.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-09-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Look What You Made Me Do",
+          "album": "reputation",
+          "track_id": 1440934255,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3b/26/64/3b26645a-2c49-f0c7-fa6d-be6ad83b0ae9/mzaf_4194244291813253017.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-08-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "You Belong With Me",
+          "album": "Fearless",
+          "track_id": 1440925035,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2c/6e/b8/2c6eb87b-a89c-98b0-f4c3-94846613b36b/mzaf_10934143866669182930.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/cb/6e/a7/cb6ea70a-6cb8-89a0-4da7-91e2d04a7bba/08PNDIM05386.rgb.jpg/100x100bb.jpg",
+          "release_date": "2008-11-11T08:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Country"
+        },
+        {
+          "name": "Delicate",
+          "album": "reputation",
+          "track_id": 1440934254,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a7/24/e8/a724e804-d5df-f7a7-24cc-09df9df57a79/mzaf_4087189896444308455.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-11-10T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 5,
+          "genre": "Pop"
+        },
+        {
+          "name": "Enchanted",
+          "album": "Speak Now",
+          "track_id": 1440920614,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/74/3c/e9/743ce91a-fa0d-1b7a-8558-85c4004022d2/mzaf_16021923754792372642.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d4/23/57/d423579f-24f7-5c82-ed10-fbfd21ceef25/10UMDIM00487.rgb.jpg/100x100bb.jpg",
+          "release_date": "2010-10-25T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Country"
+        },
+        {
+          "name": "I Knew It, I Knew You (From \"Toy Story 5\")",
+          "album": "I Knew It, I Knew You (From \"Toy Story 5\") - Single",
+          "track_id": 6775527443,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/73/76/42/737642e6-c478-bed7-f11f-efee96072450/mzaf_5163950318414409594.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/34/35/6c/34356cb4-bd0b-3bac-b118-1a6d7264dc64/26UMGIM69942.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-06-05T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Country"
+        },
+        {
+          "name": "Love Story (Taylor’s Version)",
+          "album": "Fearless (Taylor's Version)",
+          "track_id": 1552791427,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8b/4c/b3/8b4cb3a5-b1d1-c82c-e6ab-48cc3969d4ff/mzaf_858711921713575608.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/c3/d0/1c/c3d01c88-73e7-187e-fd62-e1744de979a6/21UMGIM09915.rgb.jpg/100x100bb.jpg",
+          "release_date": "2021-02-11T08:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Country"
+        },
+        {
+          "name": "Anti-Hero",
+          "album": "Midnights",
+          "track_id": 1649434293,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1d/56/2a/1d562a07-dc5f-a9c0-1f36-2051a8c14eb7/mzaf_7214829135431340590.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/3d/01/f2/3d01f2e5-5a08-835f-3d30-d031720b2b80/22UM1IM07364.rgb.jpg/100x100bb.jpg",
+          "release_date": "2022-10-21T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "The Man",
+          "album": "Lover",
+          "track_id": 1468058176,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3b/b7/c6/3bb7c6f7-d06f-f91c-7801-0ed0a6257e1c/mzaf_12747815097409700369.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Pop"
+        },
+        {
+          "name": "I Don’t Wanna Live Forever (Fifty Shades Darker)",
+          "album": "Fifty Shades Darker (Original Motion Picture Soundtrack)",
+          "track_id": 1440880860,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/94/14/20/94142074-e264-15cb-77ea-a0821d86c5ca/mzaf_5791146158719480684.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/e5/9b/1e/e59b1eaa-92d3-df4b-73f2-9bd798feb630/17UMGIM01263.rgb.jpg/100x100bb.jpg",
+          "release_date": "2016-12-09T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Soundtrack"
+        },
+        {
+          "name": "Back to December",
+          "album": "Speak Now",
+          "track_id": 1440920489,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3c/23/f8/3c23f8f0-f470-7297-face-dd95e6092aff/mzaf_3771431232214548520.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d4/23/57/d423579f-24f7-5c82-ed10-fbfd21ceef25/10UMDIM00487.rgb.jpg/100x100bb.jpg",
+          "release_date": "2010-10-25T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Country"
+        },
+        {
+          "name": "Style",
+          "album": "1989 (Deluxe Edition)",
+          "track_id": 1440933520,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c7/79/81/c7798117-a0f6-0695-275f-95fd3ef4fdf4/mzaf_9965434137419857797.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a7/98/d8/a798d867-344d-2bf2-fbfe-d2d1412dcef8/14UMDIM03793.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Blank Space",
+          "album": "1989 (Deluxe Edition)",
+          "track_id": 1440933517,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/79/55/b1/7955b10c-6cb6-462a-861c-8e5cbcacfb76/mzaf_3395570742482345989.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a7/98/d8/a798d867-344d-2bf2-fbfe-d2d1412dcef8/14UMDIM03793.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "ME! (feat. Brendon Urie of Panic! At The Disco)",
+          "album": "Lover",
+          "track_id": 1468058706,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c5/6f/e3/c56fe3a6-2f25-b545-6135-aaba0a838569/mzaf_1819099962104489735.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-04-26T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 16,
+          "genre": "Pop"
+        },
+        {
+          "name": "Don’t Blame Me",
+          "album": "reputation",
+          "track_id": 1440934252,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/89/7f/e3/897fe3af-e50c-5056-76c8-94d944406980/mzaf_5316514300927719419.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-11-10T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Pop"
+        },
+        {
+          "name": "Paper Rings",
+          "album": "Lover",
+          "track_id": 1468058181,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/05/2d/b7/052db7e1-e5cf-bfba-c309-9b3e31edeb37/mzaf_11390896675529863162.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 8,
+          "genre": "Pop"
+        },
+        {
+          "name": "Getaway Car",
+          "album": "reputation",
+          "track_id": 1440934262,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4b/db/4c/4bdb4c1e-e19e-5e71-1b49-8a1eaad716ba/mzaf_13094202028105221330.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-11-10T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "You Belong With Me (Taylor’s Version)",
+          "album": "Fearless (Taylor's Version)",
+          "track_id": 1552791558,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ec/84/f2/ec84f262-1498-583f-dd5b-cd1a78587bce/mzaf_8651470950553551918.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/c3/d0/1c/c3d01c88-73e7-187e-fd62-e1744de979a6/21UMGIM09915.rgb.jpg/100x100bb.jpg",
+          "release_date": "2021-04-09T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Country"
+        },
+        {
+          "name": "Picture to Burn",
+          "album": "Taylor Swift (Bonus Track Version)",
+          "track_id": 1440913991,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d0/47/2a/d0472a19-d67e-b27c-8d50-78e9c7c07def/mzaf_4204387521125771075.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/be/e1/48/bee148d6-d16c-d8f7-0173-d6cf6d684aa1/08PNDIM00678.rgb.jpg/100x100bb.jpg",
+          "release_date": "2006-10-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Country"
+        },
+        {
+          "name": "Shake It Off",
+          "album": "1989 (Deluxe Edition)",
+          "track_id": 1440933651,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/11/d5/6d/11d56d4a-ce23-e793-8681-70dc4d35d931/mzaf_5886436202259848624.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a7/98/d8/a798d867-344d-2bf2-fbfe-d2d1412dcef8/14UMDIM03793.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-08-19T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "End Game (feat. Ed Sheeran & Future)",
+          "album": "reputation",
+          "track_id": 1440934249,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0a/e5/28/0ae52806-8f53-89af-17a7-870ec7afbafa/mzaf_8134453282110182509.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-11-10T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "Fortnight (feat. Post Malone)",
+          "album": "THE TORTURED POETS DEPARTMENT: THE ANTHOLOGY",
+          "track_id": 1742057775,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6a/d8/d1/6ad8d1f0-a747-d646-20d1-8c8dfb0bce3a/mzaf_190295342267799968.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a4/86/59/a486593a-53c9-1c2a-5122-8f25339f7359/24UMGIM44778.rgb.jpg/100x100bb.jpg",
+          "release_date": "2024-04-19T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Welcome To New York",
+          "album": "1989",
+          "track_id": 1440935802,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/f2/da/44f2daa3-2376-438a-02e8-bdb3ce32b37c/mzaf_13441752673723468494.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-20T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "cardigan",
+          "album": "folklore",
+          "track_id": 1524801580,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/00/b3/f2/00b3f2a0-3228-b65f-7189-91eb26f5adf6/mzaf_3535055549125623460.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ca/f3/67/caf367a5-2cf6-6b2e-a891-97dc57b19f08/20UMGIM64216.rgb.jpg/100x100bb.jpg",
+          "release_date": "2020-07-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Alternative"
+        },
+        {
+          "name": "Wildest Dreams",
+          "album": "1989 (Deluxe Edition)",
+          "track_id": 1440933656,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2a/64/f5/2a64f557-cc26-b6e4-e0b0-1ddff1fe097c/mzaf_7436333370044714227.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a7/98/d8/a798d867-344d-2bf2-fbfe-d2d1412dcef8/14UMDIM03793.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "august",
+          "album": "folklore",
+          "track_id": 1524801944,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fc/4c/4c/fc4c4cfb-b58d-ba29-8ce4-b7dfb5bb0053/mzaf_9441217196537110708.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ca/f3/67/caf367a5-2cf6-6b2e-a891-97dc57b19f08/20UMGIM64216.rgb.jpg/100x100bb.jpg",
+          "release_date": "2020-07-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 8,
+          "genre": "Alternative"
+        },
+        {
+          "name": "False God",
+          "album": "Lover",
+          "track_id": 1468058701,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d5/3e/67/d53e6714-03cb-7365-9351-c280e8abac35/mzaf_10316874145459051650.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 13,
+          "genre": "Pop"
+        },
+        {
+          "name": "Enchanted (Taylor's Version)",
+          "album": "Speak Now (Taylor's Version)",
+          "track_id": 1690840535,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ff/f2/da/fff2daa7-e089-c08b-9b34-d2ba8d8ee37c/mzaf_13585740172543756019.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9f/3c/0a/9f3c0a60-f9e0-a34e-60e5-0be1f182896b/23UMGIM63932.rgb.jpg/100x100bb.jpg",
+          "release_date": "2023-07-07T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "Miss Americana & The Heartbreak Prince",
+          "album": "Lover",
+          "track_id": 1468058180,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8e/94/60/8e946056-a91f-77be-f615-f4f717908723/mzaf_9075445817267686583.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 7,
+          "genre": "Pop"
+        },
+        {
+          "name": "my tears ricochet",
+          "album": "folklore",
+          "track_id": 1524801591,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b4/a8/d2/b4a8d2b3-abfa-380d-104e-6b75b9cdbb6b/mzaf_5532311754651667055.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ca/f3/67/caf367a5-2cf6-6b2e-a891-97dc57b19f08/20UMGIM64216.rgb.jpg/100x100bb.jpg",
+          "release_date": "2020-07-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 5,
+          "genre": "Alternative"
+        },
+        {
+          "name": "Tim McGraw",
+          "album": "Taylor Swift (Bonus Track Version)",
+          "track_id": 1440913928,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/6e/8c/7b6e8c80-0d55-60a7-5c34-d901eba1f781/mzaf_1020149472894041850.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/be/e1/48/bee148d6-d16c-d8f7-0173-d6cf6d684aa1/08PNDIM00678.rgb.jpg/100x100bb.jpg",
+          "release_date": "2006-06-19T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Country"
+        },
+        {
+          "name": "I Forgot That You Existed",
+          "album": "Lover",
+          "track_id": 1468058169,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9c/e2/97/9ce2976a-b1c8-aa80-3e94-f4562cbad53e/mzaf_11906958635430192793.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        }
+      ],
+      "changes": {
+        "new_entries": [
+          "I Forgot That You Existed"
+        ],
+        "dropped": [
+          "Call It What You Want"
+        ],
+        "new_count": 1,
+        "dropped_count": 1
+      }
     }
   ],
   "metadata": {
     "first_run": "2026-04-28",
-    "total_snapshots": 12,
-    "last_run": "2026-07-12"
+    "total_snapshots": 13,
+    "last_run": "2026-07-19"
   }
 }

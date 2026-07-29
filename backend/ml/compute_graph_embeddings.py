@@ -68,6 +68,13 @@ def main():
     lyr = np.load(os.path.join(OUT_DIR, 'lyrics_embeddings.npy')).astype(np.float32)
     with open(os.path.join(OUT_DIR, 'lyrics_index.json')) as f:
         index = json.load(f)
+
+    from ml.embed_utils import corpus_unchanged
+    if corpus_unchanged(os.path.join(OUT_DIR, 'graph_index.json'), index,
+                        os.path.join(OUT_DIR, 'graph_embeddings.npy')):
+        print("Graph: corpus unchanged since last build — skipping.")
+        return
+
     N = len(index)
     names = [e['name'] for e in index]
     artists = [e.get('artist', 'Taylor Swift') for e in index]

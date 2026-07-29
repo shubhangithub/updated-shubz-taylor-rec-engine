@@ -69,6 +69,13 @@ def main():
     lyrics_emb = np.load(os.path.join(OUT_DIR, 'lyrics_embeddings.npy')).astype(np.float32)
     with open(os.path.join(OUT_DIR, 'lyrics_index.json')) as f:
         index = json.load(f)
+
+    from ml.embed_utils import corpus_unchanged
+    if corpus_unchanged(os.path.join(OUT_DIR, 'ncf_index.json'), index,
+                        os.path.join(OUT_DIR, 'ncf_embeddings.npy')):
+        print("NCF: corpus unchanged since last train — skipping.")
+        return
+
     num_songs = len(index)
     print(f"Training NCF-style pair model on {num_songs} songs")
 

@@ -83,6 +83,12 @@ def main():
     with open(idx_path) as f:
         index = json.load(f)
 
+    from ml.embed_utils import corpus_unchanged
+    if corpus_unchanged(os.path.join(OUT_DIR, 'vae_index.json'), index,
+                        os.path.join(OUT_DIR, 'vae_latents.npy')):
+        print("VAE: corpus unchanged since last train — skipping.")
+        return
+
     # z-score each embedding dimension: raw MiniLM components are ~1/sqrt(384),
     # so an unscaled reconstruction term is dwarfed by the KL term and the
     # posterior collapses (all latents -> prior mean, no structure).

@@ -136,6 +136,12 @@ def main():
     with open(os.path.join(OUT_DIR, 'lyrics_index.json')) as f:
         index = json.load(f)
 
+    from ml.embed_utils import corpus_unchanged
+    if corpus_unchanged(os.path.join(OUT_DIR, 'contrastive_index.json'), index,
+                        os.path.join(OUT_DIR, 'contrastive_embeddings.npy')):
+        print("Contrastive: corpus unchanged since last train — skipping.", flush=True)
+        return
+
     # Load raw lyrics for augmentation
     with open(os.path.join(DATA_DIR, 'taylor_complete.json')) as f:
         taylor = json.load(f)

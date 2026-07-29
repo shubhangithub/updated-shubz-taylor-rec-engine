@@ -38,6 +38,29 @@ def load_embedding_cache(npy_path, index_path, expected_dim):
     return {_key(e): emb[i] for i, e in enumerate(idx)}
 
 
+def corpus_unchanged(out_index_path, songs, out_npy_path=None):
+    """True if an existing output index already covers exactly the current
+    corpus (by name+artist key), so retraining would be redundant.
+
+    Lets the weekly pipeline skip the VAE/NCF/contrastive/graph retrain when no
+    songs were added — otherwise they re-fit every week and commit fresh binary
+    blobs (repo churn) with slightly different, non-deterministic values.
+    """
+    if not os.path.exists(out_index_path):
+        return False
+    if out_npy_path and not os.path.exists(out_npy_path):
+        return False
+    try:
+        existing = json.load(open(out_index_path))
+    except Exception:
+        return False
+    if {_key(s) for s in songs} != {_key(e) for e in existing}:
+        return False
+    if out_npy_path and np.load(out_npy_path).shape[0] != len(existing):
+        return False
+    return True
+
+
 def assemble_incremental(songs, cache, encode_new, dim):
     """Build the full embedding matrix in `songs` order, reusing cached rows.
 

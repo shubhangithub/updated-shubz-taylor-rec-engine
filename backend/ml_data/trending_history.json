@@ -11724,11 +11724,573 @@
         "new_count": 5,
         "dropped_count": 4
       }
+    },
+    {
+      "date": "2026-09-27",
+      "song_count": 48,
+      "songs": [
+        {
+          "name": "Patient Zero",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997425,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0b/be/8c/0bbe8c0a-dc77-af41-97a5-c745cc43d38c/mzaf_11790447166833591507.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 0.99,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Babylon",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996163,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/14/4b/6a/144b6aa7-a2af-41a7-fd2f-8e8aac953c41/mzaf_15506372320552650974.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Pop"
+        },
+        {
+          "name": "Cleveland!",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996161,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2e/6a/66/2e6a6692-b534-7a7a-960b-f03971890156/mzaf_5159890340173357660.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "Pink Clouding",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997428,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/1e/88/d5/1e88d560-253f-3fa2-87a0-2f83b9681948/mzaf_11928544907491655022.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Pink Clouding",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996162,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/14/33/73/143373d4-c1db-aec9-8783-dfa56c7e6cd5/mzaf_1379738981081855840.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Patient Zero",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996157,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ce/2e/4e/ce2e4e2d-445b-6b79-74b9-56cc6480796c/mzaf_13807124895416978287.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 0.99,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Cleveland!",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997427,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/39/42/5b/39425b91-27b1-4b37-2f57-6f704fa5d8a6/mzaf_158326623628930700.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "Babylon",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997429,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/58/f2/54/58f254a3-25aa-0542-bf46-4627c8f2e06b/mzaf_5527018976386911832.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-09-24T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Pop"
+        },
+        {
+          "name": "The Fate of Ophelia",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814995862,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/13/df/c9/13dfc9f2-4fae-9d67-3575-cb42ce43f3e2/mzaf_1591596914482327831.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Opalite",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814995866,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6d/79/02/6d7902fc-a568-9a65-0bf6-8c0b55dc4926/mzaf_16294147463868621416.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Elizabeth Taylor",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814995864,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ca/23/6a/ca236a63-d859-4237-2dec-5edf7b654030/mzaf_11163211562820501283.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "Opalite",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997409,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/14/7d/f5/147df55f-3720-dcfe-4e6f-c9b182f58695/mzaf_14172830644190074144.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "Elizabeth Taylor",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997408,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/49/3d/0c/493d0c03-5b0d-4b9f-f698-e7df263bb5cb/mzaf_9409567680475091167.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "The Fate of Ophelia",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997402,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/eb/f7/b2/ebf7b2ce-1b88-3256-d7a1-bdb97cdb9d88/mzaf_11342796757749510764.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Ruin The Friendship",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814997414,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/16/e1/33/16e13354-8618-da02-4ddf-9876dffaf87c/mzaf_4525310309454795642.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "Ruin The Friendship",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996142,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2d/c8/b4/2dc8b41d-fc1b-3839-7c59-2b0575b2f672/mzaf_6955262653339409424.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "Eldest Daughter",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996140,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3e/e8/b3/3ee8b318-bc76-cb9b-7d8f-198cac398915/mzaf_12745462491273893711.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 5,
+          "genre": "Pop"
+        },
+        {
+          "name": "Actually Romantic",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996145,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3d/31/ad/3d31ad5d-0599-394d-1521-5976d0126eef/mzaf_10829001016735407872.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 7,
+          "genre": "Pop"
+        },
+        {
+          "name": "Father Figure",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814995869,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/55/cd/91/55cd9141-0dd7-b9c1-e41b-dfe5fbfc7469/mzaf_17399921988043476671.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Pop"
+        },
+        {
+          "name": "Honey",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996154,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/34/ec/fb/34ecfb24-6ef0-8b29-4341-03a2d6147048/mzaf_2595945112488840035.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 11,
+          "genre": "Pop"
+        },
+        {
+          "name": "CANCELLED!",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996152,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3b/d8/c5/3bd8c5e0-164a-7fde-1531-7dd6daff4058/mzaf_18093644814513846650.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 10,
+          "genre": "Pop"
+        },
+        {
+          "name": "The Life of a Showgirl (feat. Sabrina Carpenter)",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996156,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/27/7f/c8/277fc871-fcad-129b-1fd5-cb4d5ef6a66f/mzaf_12577217348066072516.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 12,
+          "genre": "Pop"
+        },
+        {
+          "name": "Wi$h Li$t",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996149,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8d/d4/33/8dd4333c-6288-1d83-3a34-5042fb96efd4/mzaf_11251383779583843567.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 8,
+          "genre": "Pop"
+        },
+        {
+          "name": "Wood",
+          "album": "The Life of a Showgirl: The Encore",
+          "track_id": 6814996151,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e0/22/eb/e022eb3e-a20c-2444-d0bc-5ba0ad0451c9/mzaf_5346191740736544673.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/a3/c7/f1a3c711-ff60-caee-2314-37c0dd3f7616/26UM1IM21436.rgb.jpg/100x100bb.jpg",
+          "release_date": "2025-10-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "Shake It Off",
+          "album": "1989",
+          "track_id": 1440936016,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/04/86/32/048632f7-a5c5-0f5d-6213-a9e89c3a99b3/mzaf_8458239339293825693.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-08-19T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "Cruel Summer",
+          "album": "Lover",
+          "track_id": 1468058171,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/af/81/44af8168-9609-1b85-5048-ada08dceacf3/mzaf_1341699644335558812.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "You Belong With Me",
+          "album": "Fearless (Platinum Edition)",
+          "track_id": 1452859427,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/15/6a/e0/156ae0e7-2a35-e1c1-3ebc-c1c837651a50/mzaf_18380354397720038617.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/59/dc/cb/59dccbb0-73f9-701e-7b5b-58c902ddfe68/09UMDIM00338.rgb.jpg/100x100bb.jpg",
+          "release_date": "2008-11-11T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 12,
+          "genre": "Country"
+        },
+        {
+          "name": "I Knew It, I Knew You (From \"Toy Story 5\")",
+          "album": "I Knew It, I Knew You (From \"Toy Story 5\") - Single",
+          "track_id": 6775527443,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/73/76/42/737642e6-c478-bed7-f11f-efee96072450/mzaf_5163950318414409594.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/34/35/6c/34356cb4-bd0b-3bac-b118-1a6d7264dc64/26UMGIM69942.rgb.jpg/100x100bb.jpg",
+          "release_date": "2026-06-05T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Country"
+        },
+        {
+          "name": "Blank Space",
+          "album": "1989",
+          "track_id": 1440935808,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/97/b4/f6/97b4f65f-f334-771c-a4f5-5e7b9b42634f/mzaf_17056874752218225925.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "...Ready For It?",
+          "album": "reputation",
+          "track_id": 1440934248,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ec/4c/66/ec4c6665-6fdd-e31f-984d-60ab919e865b/mzaf_11118961438428757175.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-09-03T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Lover",
+          "album": "Lover",
+          "track_id": 1468058173,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e0/db/47/e0db47b0-7f70-0631-0414-cd4777d2fb3e/mzaf_6362891154838442638.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-16T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "I Don’t Wanna Live Forever (Fifty Shades Darker)",
+          "album": "Fifty Shades Darker (Original Motion Picture Soundtrack)",
+          "track_id": 1440880860,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/94/14/20/94142074-e264-15cb-77ea-a0821d86c5ca/mzaf_5791146158719480684.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/e5/9b/1e/e59b1eaa-92d3-df4b-73f2-9bd798feb630/17UMGIM01263.rgb.jpg/100x100bb.jpg",
+          "release_date": "2016-12-09T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Soundtrack"
+        },
+        {
+          "name": "The Man",
+          "album": "Lover",
+          "track_id": 1468058176,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3b/b7/c6/3bb7c6f7-d06f-f91c-7801-0ed0a6257e1c/mzaf_12747815097409700369.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-08-23T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 4,
+          "genre": "Pop"
+        },
+        {
+          "name": "Wildest Dreams",
+          "album": "1989 (Deluxe Edition)",
+          "track_id": 1440933656,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2a/64/f5/2a64f557-cc26-b6e4-e0b0-1ddff1fe097c/mzaf_7436333370044714227.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a7/98/d8/a798d867-344d-2bf2-fbfe-d2d1412dcef8/14UMDIM03793.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "You Need To Calm Down",
+          "album": "Lover",
+          "track_id": 1468058704,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e8/80/4f/e8804fa1-6118-74fd-4602-b96969ebef41/mzaf_5457103975229379192.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-06-14T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 14,
+          "genre": "Pop"
+        },
+        {
+          "name": "ME! (feat. Brendon Urie of Panic! At The Disco)",
+          "album": "Lover",
+          "track_id": 1468058706,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c5/6f/e3/c56fe3a6-2f25-b545-6135-aaba0a838569/mzaf_1819099962104489735.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+          "release_date": "2019-04-26T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 16,
+          "genre": "Pop"
+        },
+        {
+          "name": "Delicate",
+          "album": "reputation",
+          "track_id": 1440934254,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a7/24/e8/a724e804-d5df-f7a7-24cc-09df9df57a79/mzaf_4087189896444308455.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-11-10T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 5,
+          "genre": "Pop"
+        },
+        {
+          "name": "august",
+          "album": "folklore",
+          "track_id": 1524801944,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fc/4c/4c/fc4c4cfb-b58d-ba29-8ce4-b7dfb5bb0053/mzaf_9441217196537110708.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/ca/f3/67/caf367a5-2cf6-6b2e-a891-97dc57b19f08/20UMGIM64216.rgb.jpg/100x100bb.jpg",
+          "release_date": "2020-07-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 8,
+          "genre": "Alternative"
+        },
+        {
+          "name": "Picture to Burn",
+          "album": "Taylor Swift (Bonus Track Version)",
+          "track_id": 1440913991,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d0/47/2a/d0472a19-d67e-b27c-8d50-78e9c7c07def/mzaf_4204387521125771075.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/be/e1/48/bee148d6-d16c-d8f7-0173-d6cf6d684aa1/08PNDIM00678.rgb.jpg/100x100bb.jpg",
+          "release_date": "2006-10-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Country"
+        },
+        {
+          "name": "Enchanted (Taylor's Version)",
+          "album": "Speak Now (Taylor's Version)",
+          "track_id": 1690840535,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ff/f2/da/fff2daa7-e089-c08b-9b34-d2ba8d8ee37c/mzaf_13585740172543756019.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9f/3c/0a/9f3c0a60-f9e0-a34e-60e5-0be1f182896b/23UMGIM63932.rgb.jpg/100x100bb.jpg",
+          "release_date": "2023-07-07T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "Blank Space (Taylor's Version)",
+          "album": "1989 (Taylor's Version)",
+          "track_id": 1708308993,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f1/dd/3a/f1dd3add-0fc5-2e35-3460-923fb707f21e/mzaf_7924539200493199372.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/11/a6/80/11a680e6-2e48-08fa-5e87-3f18e838d31f/23UM1IM11868.rgb.jpg/100x100bb.jpg",
+          "release_date": "2023-10-27T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 2,
+          "genre": "Pop"
+        },
+        {
+          "name": "Fortnight (feat. Post Malone)",
+          "album": "THE TORTURED POETS DEPARTMENT: THE ANTHOLOGY",
+          "track_id": 1742057775,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6a/d8/d1/6ad8d1f0-a747-d646-20d1-8c8dfb0bce3a/mzaf_190295342267799968.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a4/86/59/a486593a-53c9-1c2a-5122-8f25339f7359/24UMGIM44778.rgb.jpg/100x100bb.jpg",
+          "release_date": "2024-04-19T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        },
+        {
+          "name": "Back to December",
+          "album": "Speak Now",
+          "track_id": 1440920489,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3c/23/f8/3c23f8f0-f470-7297-face-dd95e6092aff/mzaf_3771431232214548520.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d4/23/57/d423579f-24f7-5c82-ed10-fbfd21ceef25/10UMDIM00487.rgb.jpg/100x100bb.jpg",
+          "release_date": "2010-10-25T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Country"
+        },
+        {
+          "name": "Wildest Dreams",
+          "album": "1989",
+          "track_id": 1440936036,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d0/91/84/d0918464-ed0d-eed2-89bd-1d3b2ebe85c5/mzaf_5128468383438758741.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 9,
+          "genre": "Pop"
+        },
+        {
+          "name": "Look What You Made Me Do",
+          "album": "reputation",
+          "track_id": 1440934255,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3b/26/64/3b26645a-2c49-f0c7-fa6d-be6ad83b0ae9/mzaf_4194244291813253017.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/e6/06/ebe606da-e00f-82d3-47f3-b79904eed541/17UM1IM24651.rgb.jpg/100x100bb.jpg",
+          "release_date": "2017-08-24T12:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Pop"
+        },
+        {
+          "name": "Style",
+          "album": "1989",
+          "track_id": 1440935812,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e7/97/e5/e797e534-4b92-1ede-116f-78565732fb8b/mzaf_6239584281452429330.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-27T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 3,
+          "genre": "Pop"
+        },
+        {
+          "name": "You Belong With Me",
+          "album": "Fearless",
+          "track_id": 1440925035,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2c/6e/b8/2c6eb87b-a89c-98b0-f4c3-94846613b36b/mzaf_10934143866669182930.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/cb/6e/a7/cb6ea70a-6cb8-89a0-4da7-91e2d04a7bba/08PNDIM05386.rgb.jpg/100x100bb.jpg",
+          "release_date": "2008-11-11T08:00:00Z",
+          "track_price": 1.29,
+          "track_number": 6,
+          "genre": "Country"
+        },
+        {
+          "name": "Welcome To New York",
+          "album": "1989",
+          "track_id": 1440935802,
+          "preview_url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/f2/da/44f2daa3-2376-438a-02e8-bdb3ce32b37c/mzaf_13441752673723468494.plus.aac.p.m4a",
+          "artwork_url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/100x100bb.jpg",
+          "release_date": "2014-10-20T07:00:00Z",
+          "track_price": 1.29,
+          "track_number": 1,
+          "genre": "Pop"
+        }
+      ],
+      "changes": {
+        "new_entries": [
+          "The Fate of Ophelia",
+          "Cleveland!",
+          "Opalite",
+          "Ruin The Friendship",
+          "Patient Zero",
+          "Babylon",
+          "Father Figure",
+          "Elizabeth Taylor",
+          "Actually Romantic",
+          "Wi$h Li$t"
+        ],
+        "dropped": [
+          "Is It Over Now? (Taylor's Version) [From The Vault]",
+          "right where you left me (bonus track)",
+          "cardigan",
+          "Love Story",
+          "I Forgot That You Existed",
+          "Our Song",
+          "Out of the Woods",
+          "Red",
+          "Gorgeous",
+          "London Boy"
+        ],
+        "new_count": 16,
+        "dropped_count": 24
+      }
     }
   ],
   "metadata": {
     "first_run": "2026-04-28",
-    "total_snapshots": 22,
-    "last_run": "2026-09-20"
+    "total_snapshots": 23,
+    "last_run": "2026-09-27"
   }
 }

@@ -6,13 +6,11 @@ import { CompareResponse } from '@/lib/types';
 
 interface AgreementHeatmapProps {
   data: CompareResponse;
-  onSongClick: (name: string) => void;
+  onSongClick: (name: string, artist?: string) => void;
 }
 
 const ENGINE_META: Record<string, { label: string; color: string }> = {
   'lyrics_transformer': { label: 'Transformer Lyrics', color: '#E53E3E' },
-  'qwen3_embed': { label: 'Qwen3 Embeddings', color: '#38B2AC' },
-  'clap_audio': { label: 'CLAP Audio', color: '#ECC94B' },
   'vae_latent': { label: 'VAE Latent', color: '#9F7AEA' },
   'graph_node2vec': { label: 'Graph Node2Vec', color: '#48BB78' },
   'ncf': { label: 'Neural Collab', color: '#5B9BD5' },
@@ -20,7 +18,7 @@ const ENGINE_META: Record<string, { label: string; color: string }> = {
   'contrastive': { label: 'Contrastive SSL', color: '#F687B3' },
 };
 
-const ENGINE_ORDER = ['lyrics_transformer', 'qwen3_embed', 'clap_audio', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
+const ENGINE_ORDER = ['lyrics_transformer', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
 
 interface SongColumn {
   key: string;
@@ -130,7 +128,7 @@ export default function AgreementHeatmap({ data, onSongClick }: AgreementHeatmap
                 fill={hoveredCell?.ci === ci ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)'}
                 transform={`rotate(-45, ${rowHeaderWidth + ci * cellSize + cellSize / 2}, ${colHeaderHeight - 6})`}
                 className="cursor-pointer select-none transition-colors"
-                onClick={() => onSongClick(col.name)}
+                onClick={() => onSongClick(col.name, col.artist)}
               >
                 {col.name.length > 16 ? col.name.slice(0, 15) + '...' : col.name}
               </text>
@@ -191,7 +189,7 @@ export default function AgreementHeatmap({ data, onSongClick }: AgreementHeatmap
                       strokeOpacity={0.5}
                       onMouseEnter={(e) => handleCellHover(e, engineKey, col, score, exists, ri, ci)}
                       onMouseLeave={() => { setTooltip(null); setHoveredCell(null); }}
-                      onClick={() => onSongClick(col.name)}
+                      onClick={() => onSongClick(col.name, col.artist)}
                     />
                   );
                 })}
@@ -223,7 +221,7 @@ export default function AgreementHeatmap({ data, onSongClick }: AgreementHeatmap
           .map((col, i) => (
             <motion.button
               key={col.key}
-              onClick={() => onSongClick(col.name)}
+              onClick={() => onSongClick(col.name, col.artist)}
               className="text-xs px-2.5 py-1 rounded-full bg-white/[0.04] text-white/60 hover:bg-white/[0.08] transition-colors"
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -231,7 +229,7 @@ export default function AgreementHeatmap({ data, onSongClick }: AgreementHeatmap
             >
               {col.name}{' '}
               <span className="text-[#D4AF37] font-mono ml-1">
-                {col.agreementCount}/8
+                {col.agreementCount}/6
               </span>
             </motion.button>
           ))}

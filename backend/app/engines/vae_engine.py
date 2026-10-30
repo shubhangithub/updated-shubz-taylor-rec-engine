@@ -1,6 +1,5 @@
 """Runtime engine for VAE latent space similarity.
-Trained on 384-dim MiniLM lyrics embeddings (z-scored) -> 16-dim latent
-(24:1 compression) with a beta=0.1 VAE; see ml/train_vae.py."""
+Now trained on 384-dim BERT lyrics embeddings → 16-dim latent (24:1 compression)."""
 import json, os, numpy as np
 from typing import List, Dict
 import logging
@@ -26,33 +25,26 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
     _load()
     if _latents is None or len(_latents) == 0: return []
     from app.engines.utils import resolve_seed_indices
-    seed_indices = resolve_seed_indices(song_names, _index)
+    seed_indices = resolve_seed_indices(_index, song_names)
     if not seed_indices: return []
 
     seed = np.mean(_latents[seed_indices], axis=0, keepdims=True)
     distances = np.linalg.norm(_latents - seed, axis=1)
-    # Scale-free transform: comparable across queries, unlike normalizing by
-    # the farthest song (which pinned the farthest to 0 per query).
-    sims = 1.0 / (1.0 + distances)
+    max_d = max(distances.max(), 1e-8)
+    sims = 1 - (distances / max_d)
 
-    dim = _latents.shape[1]
     results = []
-    seen = set()
     for idx in np.argsort(distances):
         if idx in seed_indices: continue
         e = _index[idx]
-        dedup_key = (e['name'].lower(), e.get('artist', 'Taylor Swift').lower())
-        if dedup_key in seen: continue
-        seen.add(dedup_key)
         results.append({
             'name': e['name'], 'artist': e.get('artist', 'Taylor Swift'),
             'similarity': round(float(sims[idx]), 4),
             'recommendation_type': 'vae_latent',
-            'explanation': f"VAE latent distance: {round(float(distances[idx]), 3)} in {dim}-dim compressed lyrics space (384→{dim})",
+            'explanation': f"VAE latent distance: {round(float(distances[idx]), 3)} in 16-dim compressed space (384→16, 24:1 compression)",
         })
         if len(results) >= limit * 3: break
 
-    from app.engines.utils import interleave_results, diversify_results, filter_seed_variants
-    results = filter_seed_variants(results, song_names)
+    from app.engines.utils import interleave_results, diversify_results
     diversified = diversify_results(results, temperature=0.25)
     return interleave_results(diversified, limit)

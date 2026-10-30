@@ -1,17 +1,10 @@
-"""
-Spotify User OAuth for playlist creation (Authorization Code Flow).
-
-Tokens are stored PER SESSION, keyed by an unguessable session id that the
-callback hands back to the browser via postMessage. The caller must present
-that session id on every authenticated request, so one visitor's login can
-never authorize another visitor's requests. A CSRF `state` value is issued
-at login and verified in the callback.
-"""
-import os
+"""Spotify OAuth with short-lived, per-browser sessions held only on the server."""
 import logging
+import os
 import secrets
 import time
-from typing import Optional, Dict, List, Tuple
+from threading import RLock
+from typing import Dict, List, Optional
 from urllib.parse import urlencode
 
 import requests
@@ -19,182 +12,130 @@ from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger(__name__)
-
-# session_id -> {access_token, refresh_token, user_id, created}
+CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID', '')
+CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET', '')
+REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI',
+                         os.getenv('RENDER_EXTERNAL_URL', 'http://127.0.0.1:8000').rstrip('/') + '/api/spotify/callback')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://shubz-taylor-recommendation-engine.vercel.app').rstrip('/')
+ALLOWED_ORIGINS = {FRONTEND_URL, 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001'}
+SCOPES = 'playlist-modify-public playlist-modify-private'
+_pending: Dict[str, Dict] = {}
 _sessions: Dict[str, Dict] = {}
-# pending CSRF state values -> issued-at timestamp
-_pending_states: Dict[str, float] = {}
-
-SESSION_TTL = 3600         # tokens usable for one hour
-STATE_TTL = 600            # login must complete within ten minutes
-
-CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
-CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
-REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "http://localhost:8000/api/spotify/callback")
-SCOPES = "playlist-modify-public playlist-modify-private"
+_lock = RLock()
+SESSION_TTL = 24 * 60 * 60
 
 
-def _prune(store: Dict, ttl: float) -> None:
+def configured() -> bool:
+    return bool(CLIENT_ID and CLIENT_SECRET and not CLIENT_ID.startswith('your_'))
+
+
+def get_login_url(origin: str = FRONTEND_URL) -> str:
+    if not configured():
+        raise ValueError('Spotify credentials are not configured on the server.')
+    if origin not in ALLOWED_ORIGINS:
+        raise ValueError('Invalid frontend origin')
     now = time.time()
-    for k in [k for k, ts in store.items() if isinstance(ts, (int, float)) and now - ts > ttl]:
-        store.pop(k, None)
+    state = secrets.token_urlsafe(32)
+    with _lock:
+        for key in list(_pending):
+            if _pending[key]['expires_at'] <= now:
+                del _pending[key]
+        for key in list(_sessions):
+            if _sessions[key]['session_expires_at'] <= now:
+                del _sessions[key]
+        _pending[state] = {'origin': origin, 'expires_at': now + 600}
+    return 'https://accounts.spotify.com/authorize?' + urlencode({
+        'client_id': CLIENT_ID, 'response_type': 'code', 'redirect_uri': REDIRECT_URI,
+        'scope': SCOPES, 'state': state, 'show_dialog': 'true',
+    })
 
 
-def get_login_url() -> str:
-    """Generate a Spotify OAuth login URL carrying a fresh CSRF state."""
-    _prune(_pending_states, STATE_TTL)
-    state = secrets.token_urlsafe(24)
-    _pending_states[state] = time.time()
-    params = {
-        "client_id": CLIENT_ID,
-        "response_type": "code",
-        "redirect_uri": REDIRECT_URI,
-        "scope": SCOPES,
-        "show_dialog": "true",
-        "state": state,
-    }
-    return f"https://accounts.spotify.com/authorize?{urlencode(params)}"
-
-
-def exchange_code(code: str, state: str) -> Optional[str]:
-    """Validate state, exchange the code, and return a new session id (or None)."""
-    _prune(_pending_states, STATE_TTL)
-    if not state or _pending_states.pop(state, None) is None:
-        logger.warning("OAuth callback with missing/expired state — rejected")
+def consume_state(state: str) -> Optional[str]:
+    with _lock:
+        pending = _pending.pop(state, None)
+    if not pending or pending['expires_at'] <= time.time():
         return None
-    try:
-        resp = requests.post(
-            "https://accounts.spotify.com/api/token",
-            data={
-                "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": REDIRECT_URI,
-                "client_id": CLIENT_ID,
-                "client_secret": CLIENT_SECRET,
-            },
-            timeout=10,
-        )
-        if resp.status_code != 200:
-            logger.error(f"Token exchange failed: {resp.status_code} {resp.text}")
-            return None
+    return pending['origin']
 
+
+def exchange_code(code: str) -> Optional[str]:
+    try:
+        resp = requests.post('https://accounts.spotify.com/api/token', data={
+            'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI,
+        }, auth=(CLIENT_ID, CLIENT_SECRET), timeout=10)
+        resp.raise_for_status()
         data = resp.json()
-        session_id = secrets.token_urlsafe(24)
-        _sessions[session_id] = {
-            "access_token": data["access_token"],
-            "refresh_token": data.get("refresh_token", ""),
-            "user_id": _get_user_id(data["access_token"]),
-            "created": time.time(),
-        }
-        _prune(_sessions, SESSION_TTL)
-        logger.info(f"Spotify session established for user {_sessions[session_id]['user_id']}")
-        return session_id
-    except Exception as e:
-        logger.error(f"Token exchange error: {e}")
+        session = secrets.token_urlsafe(32)
+        now = time.time()
+        with _lock:
+            _sessions[session] = {
+                'access_token': data['access_token'], 'refresh_token': data.get('refresh_token'),
+                'expires_at': now + data.get('expires_in', 3600),
+                'session_expires_at': now + SESSION_TTL,
+            }
+        return session
+    except (requests.RequestException, KeyError, ValueError):
+        logger.warning('Spotify token exchange failed')
         return None
 
 
-def _get_user_id(access_token: str) -> str:
-    """Get the authenticated user's Spotify ID."""
-    try:
-        resp = requests.get(
-            "https://api.spotify.com/v1/me",
-            headers={"Authorization": f"Bearer {access_token}"},
-            timeout=10,
-        )
-        return resp.json().get("id", "")
-    except Exception:
-        return ""
-
-
-def _session(session_id: str) -> Optional[Dict]:
-    _prune(_sessions, SESSION_TTL)
-    sess = _sessions.get(session_id or "")
-    if not sess:
-        return None
-    if time.time() - sess["created"] > SESSION_TTL:
-        _sessions.pop(session_id, None)
-        return None
-    return sess
-
-
-def get_user_info(session_id: str) -> Dict:
-    """Return the caller's own auth status — only for a valid session id."""
-    sess = _session(session_id)
-    if not sess:
-        return {"authenticated": False}
-    return {"authenticated": True, "user_id": sess.get("user_id", "")}
-
-
-def create_playlist(session_id: str, name: str, description: str,
-                    song_names: List[str]) -> Optional[Dict]:
-    """Create a Spotify playlist in the SESSION OWNER's account and add tracks."""
-    sess = _session(session_id)
-    if not sess:
-        return None
-    access_token = sess["access_token"]
-    user_id = sess.get("user_id", "")
-    if not user_id:
-        return None
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json",
-    }
-
-    # 1. Create playlist
-    try:
-        resp = requests.post(
-            f"https://api.spotify.com/v1/users/{user_id}/playlists",
-            headers=headers,
-            json={"name": name, "description": description, "public": True},
-            timeout=10,
-        )
-        if resp.status_code not in (200, 201):
-            logger.error(f"Playlist creation failed: {resp.status_code} {resp.text}")
+def _access_token(session: str) -> Optional[str]:
+    with _lock:
+        data = _sessions.get(session)
+        if not data or data['session_expires_at'] <= time.time():
+            _sessions.pop(session, None)
             return None
-        playlist = resp.json()
-        playlist_id = playlist["id"]
-        playlist_url = playlist["external_urls"]["spotify"]
-        logger.info(f"Created playlist: {playlist_url}")
-    except Exception as e:
-        logger.error(f"Playlist creation error: {e}")
+        if data['expires_at'] <= time.time() + 60:
+            if not data.get('refresh_token'):
+                _sessions.pop(session, None)
+                return None
+            try:
+                resp = requests.post('https://accounts.spotify.com/api/token', data={
+                    'grant_type': 'refresh_token', 'refresh_token': data['refresh_token'],
+                }, auth=(CLIENT_ID, CLIENT_SECRET), timeout=10)
+                resp.raise_for_status()
+                refreshed = resp.json()
+                data['access_token'] = refreshed['access_token']
+                data['refresh_token'] = refreshed.get('refresh_token', data['refresh_token'])
+                data['expires_at'] = time.time() + refreshed.get('expires_in', 3600)
+            except (requests.RequestException, KeyError, ValueError):
+                return None
+        return data['access_token']
+
+
+def get_user_info(session: str = '') -> Dict:
+    return {'authenticated': bool(_access_token(session)), 'configured': configured()}
+
+
+def create_playlist(session: str, name: str, description: str, song_names: List[str]) -> Optional[Dict]:
+    access_token = _access_token(session)
+    if not access_token:
         return None
-
-    # 2. Search for track URIs
-    track_uris = []
-    for song_name in song_names:
-        try:
-            search_resp = requests.get(
-                "https://api.spotify.com/v1/search",
-                headers=headers,
-                params={"q": song_name, "type": "track", "limit": 1},
-                timeout=10,
-            )
-            if search_resp.status_code == 200:
-                tracks = search_resp.json().get("tracks", {}).get("items", [])
-                if tracks:
-                    track_uris.append(tracks[0]["uri"])
-        except Exception:
-            continue
-
-    # 3. Add tracks (Spotify allows max 100 per request)
-    if track_uris:
-        try:
-            for i in range(0, len(track_uris), 100):
-                requests.post(
-                    f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks",
-                    headers=headers,
-                    json={"uris": track_uris[i:i + 100]},
-                    timeout=10,
-                )
-            logger.info(f"Added {len(track_uris)} tracks to playlist")
-        except Exception as e:
-            logger.error(f"Error adding tracks: {e}")
-
-    return {
-        "playlist_id": playlist_id,
-        "playlist_url": playlist_url,
-        "tracks_added": len(track_uris),
-        "tracks_requested": len(song_names),
-    }
+    headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+    try:
+        # Resolve tracks first so failed searches never create an empty playlist.
+        uris = []
+        for song in song_names:
+            resp = requests.get('https://api.spotify.com/v1/search', headers=headers,
+                                params={'q': song, 'type': 'track', 'limit': 1}, timeout=10)
+            resp.raise_for_status()
+            tracks = resp.json().get('tracks', {}).get('items', [])
+            if tracks and tracks[0]['uri'] not in uris:
+                uris.append(tracks[0]['uri'])
+        if not uris:
+            raise ValueError('Spotify could not find any of the requested tracks.')
+        resp = requests.post('https://api.spotify.com/v1/me/playlists', headers=headers,
+                             json={'name': name, 'description': description, 'public': True}, timeout=10)
+        resp.raise_for_status()
+        playlist = resp.json()
+        added = 0
+        for i in range(0, len(uris), 100):
+            resp = requests.post(f"https://api.spotify.com/v1/playlists/{playlist['id']}/items",
+                                 headers=headers, json={'uris': uris[i:i + 100]}, timeout=10)
+            resp.raise_for_status()
+            added += len(uris[i:i + 100])
+        return {'playlist_id': playlist['id'], 'playlist_url': playlist['external_urls']['spotify'],
+                'tracks_added': added, 'tracks_requested': len(song_names)}
+    except requests.RequestException as exc:
+        logger.warning('Spotify playlist request failed: %s', type(exc).__name__)
+        raise ValueError('Spotify could not complete the playlist. Please retry or reconnect Spotify.') from exc

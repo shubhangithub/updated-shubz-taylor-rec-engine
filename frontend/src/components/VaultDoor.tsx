@@ -39,12 +39,12 @@ export default function VaultDoor({ onOpen }: VaultDoorProps) {
     setCrackWidth(proximity);
   }, [isOpening]);
 
-  const handleClick = useCallback(() => {
-    if (crackWidth > 0.3) {
+  const handleClick = useCallback((event: React.MouseEvent) => {
+    if (!isOpening && (crackWidth > 0.3 || event.detail === 0)) {
       setIsOpening(true);
       setTimeout(onOpen, 1800);
     }
-  }, [crackWidth, onOpen]);
+  }, [crackWidth, isOpening, onOpen]);
 
   // Touch support
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -63,6 +63,16 @@ export default function VaultDoor({ onOpen }: VaultDoorProps) {
       ref={containerRef}
       className="fixed inset-0 z-50 cursor-pointer select-none overflow-hidden"
       onMouseMove={handleMouseMove}
+      role="button"
+      tabIndex={0}
+      aria-label="Enter the music universe"
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
+      onTouchStart={handleTouchMove}
       onTouchMove={handleTouchMove}
       onClick={handleClick}
       initial={{ opacity: 1 }}

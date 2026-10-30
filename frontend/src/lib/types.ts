@@ -124,9 +124,6 @@ export interface ExplainableResult {
   era_connection?: string;
   feature_breakdown?: Record<string, FeatureBreakdown>;
   top_factors?: string[];
-  explanation?: string;
-  engine_count?: number;
-  engines_used?: string[];
 }
 
 export interface CompareResponse {
@@ -149,4 +146,4 @@ export interface EngineStats {
 
 export type Mood = 'heartbreak' | 'euphoria' | 'melancholy' | 'rage' | 'nostalgia' | 'romantic' | 'empowerment' | 'introspective';
 
-export type Era = 'Taylor Swift' | 'Fearless' | 'Speak Now' | 'Red' | '1989' | 'reputation' | 'Lover' | 'folklore' | 'evermore' | 'Midnights' | 'The Tortured Poets Department' | 'The Life Of A Showgirl';
+export type Era = 'Taylor Swift' | 'Fearless' | 'Speak Now' | 'Red' | '1989' | 'reputation' | 'Lover' | 'folklore' | 'evermore' | 'Midnights' | 'The Tortured Poets Department';

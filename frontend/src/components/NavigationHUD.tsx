@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, Clock, Palette, BarChart3, Search, X, ArrowLeft, Star, Sparkles, Cog, Play, BookOpen, TrendingUp, Heart } from 'lucide-react';
+import { Compass, Clock, Palette, BarChart3, Search, X, ArrowLeft, Star, Sparkles, Cog, Play, BookOpen, TrendingUp } from 'lucide-react';
 import { TaylorSong } from '@/lib/types';
 import { ERA_THEMES } from '@/lib/eraThemes';
 
@@ -28,7 +28,6 @@ interface NavigationHUDProps {
 const NAV_ITEMS: { view: View; icon: React.ReactNode; label: string }[] = [
   { view: 'constellation', icon: <Compass className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Constellation' },
   { view: 'recommend', icon: <Sparkles className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Recommend' },
-  { view: 'mood-rooms', icon: <Heart className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Moods' },
   { view: 'trending', icon: <TrendingUp className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Trending' },
   { view: 'eras', icon: <Clock className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Eras' },
   { view: 'observatory', icon: <BarChart3 className="w-5 h-5 md:w-[18px] md:h-[18px]" />, label: 'Observatory' },
@@ -95,16 +94,16 @@ export default function NavigationHUD({
     }
   };
 
-  // Close the search dropdown when clicking outside it
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        onSearchClose();
+        // Don't close if clicking the input
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [onSearchClose]);
+  }, []);
 
   return (
     <>
@@ -291,20 +290,19 @@ export default function NavigationHUD({
       </AnimatePresence>
 
       {/* Bottom navigation */}
-      <motion.nav
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7, duration: 0.8 }}
+      <nav
+        aria-label="Main navigation"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-1rem)]"
       >
-        <div className="glass rounded-full px-2 py-2 flex items-center gap-1">
+        <div className="glass rounded-full px-2 py-2 flex items-center gap-1 overflow-x-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = currentView === item.view;
             return (
               <motion.button
                 key={item.view}
+                aria-label={item.label}
                 onClick={() => onNavigate(item.view)}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                className={`relative flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-all duration-300 ${
                   isActive
                     ? 'text-[#D4AF37]'
                     : 'text-white/40 hover:text-white/70'
@@ -328,7 +326,7 @@ export default function NavigationHUD({
             );
           })}
         </div>
-      </motion.nav>
+      </nav>
     </>
   );
 }

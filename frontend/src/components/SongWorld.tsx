@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL, apiFetch } from '@/lib/connection';
+
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Billboard, Text, OrbitControls } from '@react-three/drei';
@@ -7,7 +9,7 @@ import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SongWithAtmosphere, Song, EditorialBridge } from '@/lib/types';
 import { ERA_THEMES, getEraFontClass } from '@/lib/eraThemes';
-import { ExternalLink, Play, Pause, Sparkles, BookOpen, Music, X } from 'lucide-react';
+import { ExternalLink, Play, Pause, ChevronRight, Sparkles, BookOpen, Music, X } from 'lucide-react';
 
 // Particle system that responds to atmosphere
 function AtmosphereParticles({ atmosphere, colors }: { atmosphere: string; colors: string[] }) {
@@ -55,9 +57,7 @@ function AtmosphereParticles({ atmosphere, colors }: { atmosphere: string; color
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
+          args={[positions, 3]}
         />
       </bufferGeometry>
       <pointsMaterial
@@ -345,7 +345,6 @@ function WaveLyricLine({
     'font-era-evermore': "'IM Fell DW Pica', serif",
     'font-era-midnights': "'Inter', sans-serif",
     'font-era-ttpd': "'Cormorant Garamond', serif",
-    'font-era-showgirl': "'Cinzel', serif",
   };
   const fontFamily = fontMap[fontClass] || "'Playfair Display', serif";
   const isItalic = ['font-era-folklore', 'font-era-ttpd'].includes(fontClass);
@@ -561,8 +560,8 @@ function shouldMerge(current: string, next: string): boolean {
   return false;
 }
 
-function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songName }: {
-  lyrics: string; isPlaying: boolean; tempo: number; eraColor: string; eraFontClass: string; songName: string;
+function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songName, artist }: {
+  lyrics: string; isPlaying: boolean; tempo: number; eraColor: string; eraFontClass: string; songName: string; artist: string;
 }) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const linesRef = useRef<string[]>([]);
@@ -591,13 +590,15 @@ function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songN
 
   // Load Whisper sync data — use start_line to know WHERE in lyrics the preview starts
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    fetch(`${url}/api/lyrics-sync/${encodeURIComponent(songName)}`)
+    const controller = new AbortController();
+    syncTimingsRef.current = [];
+    startLineRef.current = 0;
+    useSyncRef.current = false;
+    const url = API_URL;
+    apiFetch(`${url}/api/lyrics-sync/${encodeURIComponent(songName)}?artist=${encodeURIComponent(artist)}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        // Skip low-confidence alignments — showing timings Whisper couldn't
-        // align is worse than plain lyrics.
-        if (data?.line_timings?.length > 2 && !data.low_confidence) {
+        if (!controller.signal.aborted && data?.line_timings?.length > 2) {
           const merged = mergeFragments(data.line_timings);
           syncTimingsRef.current = merged;
           // start_line tells us which line of the full lyrics the preview snippet begins at
@@ -606,7 +607,8 @@ function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songN
         }
       })
       .catch(() => {});
-  }, [songName]);
+    return () => controller.abort();
+  }, [songName, artist]);
 
   // Track playback start time
   useEffect(() => {
@@ -762,6 +764,7 @@ export default function SongWorld({ song, recommendations, editorialBridges, onB
           eraColor={theme?.colors.primary || '#D4AF37'}
           eraFontClass={getEraFontClass(song.album)}
           songName={song.name}
+          artist={song.artist}
         />
       )}
 
@@ -897,17 +900,19 @@ export default function SongWorld({ song, recommendations, editorialBridges, onB
               {editorialBridges.slice(0, 4).map((bridge, i) => (
                 <motion.div
                   key={i}
-                  className="glass rounded-xl p-4"
+                  className="glass glass-hover rounded-xl p-4 cursor-pointer transition-all duration-300"
                   style={isPlaying ? { animation: `beat-pulse ${beatDuration}s ease-in-out infinite`, animationDelay: `${beatDuration * 0.25 * i}s` } : undefined}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 + i * 0.1 }}
+                  whileHover={{ scale: 1.02, x: -5 }}
                 >
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium text-white/90">{bridge.song}</p>
                       <p className="text-xs text-white/40">{bridge.artist}</p>
                     </div>
+                    <ChevronRight size={14} className="text-white/20 flex-shrink-0 mt-1" />
                   </div>
                   <p className="text-xs text-white/30 mt-2 italic leading-relaxed">
                     &ldquo;{bridge.reason}&rdquo;

@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL, apiFetch } from '@/lib/connection';
+
 import { useState, useMemo, useRef, useEffect, useCallback, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TaylorSong } from '@/lib/types';
@@ -32,11 +34,20 @@ function useSongFeatures() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    // Load features from the dataset endpoint (this is the only fetch the
-    // Observatory needs — a prior two-request "connectivity test" fired two
-    // extra requests per mount against the Render free tier for no data).
-    fetch(`${url}/api/all-song-features`)
+    const url = API_URL;
+    apiFetch(`${url}/api/catalog`)
+      .then(r => r.json())
+      .then(data => {
+        const catalog = data.catalog || [];
+        // Now fetch the full dataset for features
+        return apiFetch(`${url}/api/song-data/Tim McGraw`)
+          .then(() => catalog); // Just to test connectivity
+      })
+      .catch(() => [])
+      .finally(() => setLoading(false));
+
+    // Load features from the dataset endpoint
+    apiFetch(`${url}/api/all-song-features`)
       .then(r => r.ok ? r.json() : { songs: [] })
       .then(data => {
         if (data.songs && data.songs.length > 0) {
@@ -749,8 +760,8 @@ export default function Observatory({ onSongClick }: ObservatoryProps) {
   const [eraFeatures, setEraFeatures] = useState<Record<string, Record<string, number>>>(ERA_FEATURES);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    fetch(`${url}/api/era-features`)
+    const url = API_URL;
+    apiFetch(`${url}/api/era-features`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.eras) {
@@ -784,8 +795,8 @@ export default function Observatory({ onSongClick }: ObservatoryProps) {
 
   return (
     <EraFeaturesContext.Provider value={eraFeatures}>
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="min-h-screen px-6 md:px-12 pt-20 pb-24 max-w-5xl mx-auto">
+      <div className="fixed inset-0 overflow-y-auto scroll-pt-20 scroll-pb-56">
+        <div className="min-h-screen px-6 md:px-12 pt-20 pb-56 md:pb-32 max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <h1 className="font-display text-4xl md:text-5xl text-white/80 mb-2">The Observatory</h1>
             <p className="text-white/30 text-sm tracking-wider">

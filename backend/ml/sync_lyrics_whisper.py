@@ -23,10 +23,7 @@ OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ml_data')
 
 def get_itunes_preview_url(song_name: str, artist: str = "Taylor Swift") -> str:
     """Get iTunes preview URL for a song."""
-    from urllib.parse import quote_plus
-    # quote_plus so titles containing '&' don't truncate the search term and
-    # pull the wrong recording (which Whisper would then mis-align against).
-    query = quote_plus(f"{song_name} {artist}")
+    query = f"{song_name} {artist}".replace(" ", "+")
     try:
         resp = requests.get(
             f"https://itunes.apple.com/search?term={query}&media=music&limit=3",

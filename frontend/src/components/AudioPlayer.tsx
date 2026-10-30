@@ -26,85 +26,57 @@ export default function AudioPlayer({ song, enabled, onToggle, onAudioRef }: Aud
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const prevUrlRef = useRef<string | null>(null);
-  // Remember the last song that had a preview for display purposes
+  // Retain the last playable song while exploring songs without previews.
   const [displaySong, setDisplaySong] = useState(song);
-  if (song && song.preview_url && song !== displaySong) {
-    setDisplaySong(song);
-  }
-  // Use displaySong for rendering, song for audio logic
   const shownSong = song?.preview_url ? song : displaySong;
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+  const onAudioRefRef = useRef(onAudioRef);
+  onAudioRefRef.current = onAudioRef;
 
-  // When song changes, swap the audio source — but ONLY if new song has a preview
   useEffect(() => {
-    const url = song?.preview_url;
+    if (song?.preview_url) setDisplaySong(song);
+  }, [song]);
 
-    // Same URL — don't restart
-    if (url === prevUrlRef.current) return;
-
-    // If new song has NO preview, keep playing whatever is currently playing
+  useEffect(() => {
+    const url = shownSong?.preview_url;
     if (!url) return;
-
-    // While muted, don't record this URL — otherwise unmuting would early-return
-    // on the "same URL" check above and the song would never start.
-    if (!enabled) {
-      setIsPlaying(false);
-      return;
-    }
-
-    // New song with a preview — commit and swap
-    prevUrlRef.current = url;
-
-    // Stop old audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.removeAttribute('src');
-      audioRef.current = null;
-    }
-
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.src = url;
+    audio.volume = 0.4;
+    audio.loop = true;
+    audioRef.current = audio;
     setProgress(0);
     setDuration(0);
-
-    const audio = new Audio(url);
-    audio.volume = 0.4;
-    audio.crossOrigin = 'anonymous';
-    audioRef.current = audio;
-
-    // Expose audio element for Web Audio API beat detection
-    if (onAudioRef) onAudioRef(audio);
-
-    audio.addEventListener('loadedmetadata', () => {
-      setDuration(audio.duration);
-    });
-
-    audio.addEventListener('timeupdate', () => {
-      setProgress(audio.currentTime);
-    });
-
-    audio.addEventListener('ended', () => {
-      // Loop the preview
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    });
-
-    // Auto-play when a new song is loaded
-    audio.play().then(() => {
-      setIsPlaying(true);
-    }).catch(() => {
-      setIsPlaying(false);
-    });
-
+    onAudioRefRef.current?.(audio);
+    const metadata = () => setDuration(audio.duration);
+    const progress = () => setProgress(audio.currentTime);
+    const playing = () => setIsPlaying(true);
+    const paused = () => setIsPlaying(false);
+    audio.addEventListener('loadedmetadata', metadata);
+    audio.addEventListener('timeupdate', progress);
+    audio.addEventListener('play', playing);
+    audio.addEventListener('pause', paused);
+    audio.addEventListener('error', paused);
+    if (enabledRef.current) audio.play().catch(() => setIsPlaying(false));
     return () => {
-      // Don't destroy audio on unmount — let it persist
+      audio.pause();
+      audio.removeEventListener('loadedmetadata', metadata);
+      audio.removeEventListener('timeupdate', progress);
+      audio.removeEventListener('play', playing);
+      audio.removeEventListener('pause', paused);
+      audio.removeEventListener('error', paused);
+      audio.removeAttribute('src');
+      audio.load();
+      if (audioRef.current === audio) audioRef.current = null;
     };
-  }, [song?.preview_url, enabled]);
+  }, [shownSong?.preview_url]);
 
-  // Handle enable/disable
   useEffect(() => {
-    if (!enabled && audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
+    if (!audioRef.current) return;
+    if (enabled) audioRef.current.play().catch(() => setIsPlaying(false));
+    else audioRef.current.pause();
   }, [enabled]);
 
   const togglePlayPause = useCallback(() => {

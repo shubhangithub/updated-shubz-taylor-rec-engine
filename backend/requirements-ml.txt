@@ -13,5 +13,3 @@ gensim
 networkx
 openai-whisper
 lyricsgenius
-scipy
-imageio-ffmpeg

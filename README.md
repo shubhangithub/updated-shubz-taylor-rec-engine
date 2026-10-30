@@ -8,30 +8,28 @@
 
 This is a music recommendation engine built around one of the most studied and obsessed-over catalogs in modern music: Taylor Swift's. But it is not a Taylor Swift fan project. It is a serious attempt to answer a deceptively hard question: *why do two songs feel the same?*
 
-To find out, eight ML engines — seven embedding engines plus a hybrid ensemble, each grounded in a published research technique — are pointed at 1,056 songs by Taylor Swift and 80 other artists. A Sentence-BERT transformer reads lyrics as meaning, and its 2025-era counterpart (Qwen3-Embedding-0.6B) reads the *whole* song where the 2019 encoder stops after the first verse. A Variational Autoencoder compresses those 384 dimensions of feeling into 16. A node2vec graph walker roams a multi-artist song graph to discover connections no playlist algorithm would surface. An NCF-style neural pair model scores song affinity from synthetic interactions (there are no real listeners here — and this README says so rather than pretending otherwise). A Contrastive SSL head, trained with the same NT-Xent loss that taught machines to see, refines what makes two songs similar without song-level labels. A CLAP audio model is the only engine that *hears* the recordings — 30-second previews embedded into a joint audio-text space, where a mood described in words can be scored against sound. And a hybrid ensemble aggregates all seven, boosted where they agree.
+To find out, we built six independent ML engines — each implementing a real, published research technique — and pointed them at 801 songs across 46 artists. A Sentence-BERT transformer reads lyrics as meaning. A Variational Autoencoder compresses 384 dimensions of feeling into 16. A Node2Vec graph walker discovers connections no playlist algorithm would surface. A Neural Collaborative Filter learns taste the way Netflix learned movies. A Hybrid Ensemble combines the five embedding engines with weighted rank aggregation and consensus boosts. And a Contrastive SSL model, trained with the same NT-Xent loss that taught machines to see, learns what makes two songs similar without ever being told.
 
-The result is a 3D constellation of Taylor Swift's universe — every song a star, every connection a thread of light — with Whisper-synced karaoke, hand-written editorial bridges connecting Taylor to 53 other artists, and four data science investigations that read like magazine features.
+The result is a 3D constellation of Taylor Swift's universe — every song a star, every connection a thread of light — with Whisper-synced karaoke, hand-written editorial bridges connecting Taylor to 53 other artists, and four data science investigations that read like magazine features. It started as a school project. It became something we couldn't stop building.
 
-## The Eight Engines
+## The Six Engines
 
 | Engine | Technique | Paper | What It Finds |
 |--------|-----------|-------|---------------|
-| **Transformer Lyrics** | Sentence-BERT embeddings (384-d) | Reimers & Gurevych, 2019 (EMNLP) | Songs that mean the same thing, even in different words |
-| **Qwen3 Embeddings** | Modern LLM-based embeddings, full lyrics (1024-d) | Zhang et al., 2025 (arXiv:2506.05176) | What six years of encoder progress hears that 2019 couldn't |
-| **VAE Latent Space** | beta-VAE over lyrics embeddings (384 → 16-d) | Kingma & Welling, 2013 (ICLR 2014) | The hidden structure beneath lyrical similarity |
-| **Graph Node2Vec** | Second-order biased walks, p=1 q=2 (64-d) | Grover & Leskovec, 2016 (KDD) | Neighbors you would never think to visit |
-| **Neural Collaborative** | NCF-style MLP pair scorer on synthetic pairs (48-d) | He et al., 2017 (WWW) — adapted, no user data | Songs whose lyrics, audio profile, and editorial bridges predict affinity |
-| **CLAP Audio** | Joint audio-text embeddings of 30s previews (512-d) | Wu et al., 2023 (ICASSP) | Songs that *sound* alike — and moods scored against the audio itself |
-| **Hybrid Ensemble** | Weighted rank aggregation across the 7 embedding engines | Burke, 2002 (UMUAI) | The consensus — and the disagreements — of all the others |
-| **Contrastive SSL** | SimCLR-style NT-Xent on augmented lyrics (64-d) | Chen et al., 2020 (ICML); CLMR-inspired | Similarity refined without song-level labels |
+| **Transformer Lyrics** | Sentence-BERT embeddings (384-d) | Reimers & Gurevych, 2019 | Songs that mean the same thing, even in different words |
+| **VAE Latent Space** | Variational Autoencoder (384 -> 16-d) | Kingma & Welling, 2013 | The hidden structure beneath lyrical similarity |
+| **Graph Node2Vec** | Biased random walks on song graphs (64-d) | Grover & Leskovec, 2016 (KDD) | Neighbors you would never think to visit |
+| **Neural Collaborative** | Neural Collaborative Filtering (48-d) | He et al., 2017 (WWW) | What listeners with your taste also love |
+| **Hybrid Ensemble** | Weighted rank aggregation | Burke, 2002 | Consensus across the five embedding engines |
+| **Contrastive SSL** | SimCLR-style self-supervised learning (64-d) | Spijkervet & Burgoyne, 2021 (ISMIR) | Similarity learned without labels |
 
-Six engines implement their papers directly; the NCF and contrastive engines are honest adaptations (no real users; frozen text encoder) and are labeled as such everywhere they appear. The CLAP engine covers the songs with an available iTunes preview; preview clips are never redistributed — only derived embeddings ship. Every embedding is pre-computed and stored as numpy arrays. Runtime queries take less than 10 milliseconds.
+All six are real implementations. Every embedding is pre-computed and stored as numpy arrays. Runtime queries take less than 10 milliseconds.
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/shubhangithub/updated-shubz-taylor-rec-engine.git
-cd updated-shubz-taylor-rec-engine
+cd shubz-taylor-rec-engine
 chmod +x setup.sh && ./setup.sh
 ```
 
@@ -51,10 +49,10 @@ Open [http://localhost:3000](http://localhost:3000) and step through the vault d
 
 ## Architecture
 
-**Frontend**: Next.js 14, TypeScript, Tailwind, Framer Motion, React Three Fiber (Three.js), Recharts
+**Frontend**: Next.js 15.5, React 19, TypeScript, Tailwind, Framer Motion, React Three Fiber 9 (Three.js), Recharts
 **Backend**: FastAPI, Python, uvicorn
 **ML**: PyTorch, sentence-transformers, gensim, scikit-learn, networkx
-**Data**: Spotify API, iTunes previews, Genius lyrics, OpenAI Whisper
+**Data**: Spotify API, iTunes previews, LRCLIB lyrics (optional Genius fallback), OpenAI Whisper
 
 ```
 backend/
@@ -80,31 +78,28 @@ frontend/
 
 ## Data
 
-The engine operates on a carefully assembled dataset:
+The pretrained model baseline uses the dataset below; weekly lyric expansion can increase the current corpus:
 
 - **355 Taylor Swift songs** across 12 eras (including The Life Of A Showgirl)
 - **323 songs** with real Spotify audio features (9 dimensions: danceability, energy, valence, acousticness, instrumentalness, liveness, speechiness, tempo, loudness)
 - **341 songs** with full lyrics
-- **715 cross-artist songs** from 80 artists (Genius, plus tokenless iTunes + lyrics.ovh gathering)
+- **460 cross-artist songs** from 46 artists, scraped via Genius
 - **166 editorial bridges** — hand-written connections between Taylor and 53 unique artists, each with a poetic reason
 - **341 songs** with Whisper-synced lyric timings (averaging 34 timed lines per song)
-- **30-second iTunes previews** resolved for most of the corpus, embedded with CLAP (audio never committed — only the derived 512-d vectors)
-- **4 data science analyses** computed from real data, with real statistics and honest significance labels, zero placeholders
+- **4 data science analyses** computed from real data, with real statistics, zero placeholders
 
-A weekly GitHub Actions pipeline expands the artist pool, tracks trending songs, recomputes lyrics embeddings, Whisper-syncs new songs, and refreshes the insights. Cross-artist lyrics are scraped on demand; downstream engines (VAE, NCF, Contrastive, Qwen3) are re-trained manually after corpus changes.
+The weekly GitHub Actions pipeline expands cross-artist lyrics, recomputes BERT embeddings, refreshes iTunes discovery snapshots, syncs available previews, and updates insights. Audio features are served from the committed dataset because Spotify restricts that endpoint for newer apps.
 
 ## Research
 
-The papers behind the eight engines (implementations unless marked as adaptations):
+The six engines are implementations of these papers:
 
-1. **Reimers & Gurevych (2019)** — "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks", EMNLP-IJCNLP — [arxiv.org/abs/1908.10084](https://arxiv.org/abs/1908.10084)
-2. **Zhang et al. (2025)** — "Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" — [arxiv.org/abs/2506.05176](https://arxiv.org/abs/2506.05176)
-3. **Kingma & Welling (2013)** — "Auto-Encoding Variational Bayes", ICLR 2014 — [arxiv.org/abs/1312.6114](https://arxiv.org/abs/1312.6114)
-4. **Grover & Leskovec (2016)** — "node2vec: Scalable Feature Learning for Networks", KDD — [arxiv.org/abs/1607.00653](https://arxiv.org/abs/1607.00653)
-5. **He et al. (2017)** — "Neural Collaborative Filtering", WWW — [arxiv.org/abs/1708.05031](https://arxiv.org/abs/1708.05031) — *adapted*: the MLP interaction function applied to song-song pairs; this project has no real user-item data
-6. **Burke (2002)** — "Hybrid Recommender Systems: Survey and Experiments", User Modeling and User-Adapted Interaction 12(4) — the weighted-hybridization strategy behind the ensemble
-7. **Chen et al. (2020)** — "A Simple Framework for Contrastive Learning of Visual Representations" (SimCLR), ICML — [arxiv.org/abs/2002.05709](https://arxiv.org/abs/2002.05709) — *adapted to lyrics text*, inspired by **Spijkervet & Burgoyne (2021)**, "Contrastive Learning of Musical Representations" (CLMR), ISMIR — a raw-audio method this project does not implement
-8. **Wu et al. (2023)** — "Large-scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation" (CLAP), ICASSP — [arxiv.org/abs/2211.06687](https://arxiv.org/abs/2211.06687) — music checkpoint `laion/larger_clap_music`
+1. **Reimers & Gurevych (2019)** — "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks" — [arxiv.org/abs/1908.10084](https://arxiv.org/abs/1908.10084)
+2. **Kingma & Welling (2013)** — "Auto-Encoding Variational Bayes" — [arxiv.org/abs/1312.6114](https://arxiv.org/abs/1312.6114)
+3. **Grover & Leskovec (2016)** — "node2vec: Scalable Feature Learning for Networks" — [arxiv.org/abs/1607.00653](https://arxiv.org/abs/1607.00653)
+4. **He et al. (2017)** — "Neural Collaborative Filtering" — [arxiv.org/abs/1708.05031](https://arxiv.org/abs/1708.05031)
+5. **Burke (2002)** — Hybrid Recommender Systems: Survey and Experiments
+6. **Spijkervet & Burgoyne (2021)** — "Contrastive Learning of Musical Representations" (ISMIR 2021)
 
 See the [Engine page](https://shubz-taylor-recommendation-engine.vercel.app) on the live site for interactive explanations of each technique.
 
@@ -118,12 +113,12 @@ The app runs on free-tier infrastructure:
 Note: Render's free tier spins down after 15 minutes of inactivity. First request after idle takes 30-60 seconds.
 
 To deploy your own fork, set these environment variables:
-- **Render**: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`
+- **Render**: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `FRONTEND_URL` (your frontend origin), and `SPOTIFY_REDIRECT_URI` (your backend `/api/spotify/callback` URL; defaults to Render’s external URL when available)
 - **Vercel**: `NEXT_PUBLIC_API_URL` (your Render URL)
 
 ## Contributing
 
-New engines, new artists, new editorial bridges, and visual improvements are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+We welcome new engines, new artists, new editorial bridges, and visual improvements. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ## License
 
@@ -131,4 +126,31 @@ New engines, new artists, new editorial bridges, and visual improvements are wel
 
 ## Acknowledgments
 
-Taylor Swift's catalog, for being endlessly interesting to study. The Spotify, Genius, and iTunes APIs. OpenAI Whisper for making lyric synchronization possible. Sentence-BERT for making meaning computable. And the researchers behind the papers that power this project — none of this works without their work.
+Taylor Swift's catalog, for being endlessly interesting to study. The Spotify, Genius, and iTunes APIs. OpenAI Whisper for making lyric synchronization possible. Sentence-BERT for making meaning computable. And the researchers behind the six papers that power this project — none of this works without their work.
+
+## Maintenance checks
+
+Use Node.js 22+ and Python 3.12. From the repository root:
+
+```bash
+(cd frontend && npm ci && npm run lint && npm run build && npm audit)
+(cd backend && .venv/bin/python -m unittest discover -s tests -v)
+```
+
+GitHub Actions runs desktop/mobile browser smoke tests, frontend checks, and backend regression tests for changes to the application. Backend tests cover all six engines, embedding/index integrity, API validation, preview matching, and isolated Spotify sessions without requiring credentials.
+
+Spotify playlist export requires registering the exact `SPOTIFY_REDIRECT_URI` in the Spotify developer dashboard. For local development, register `http://127.0.0.1:8000/api/spotify/callback`; Spotify does not accept `localhost` redirect URIs. Each browser tab holds its own opaque session token; Spotify tokens stay on the backend. Sessions expire after 24 hours or a backend restart, after which the user reconnects. This in-memory session store supports the current single-process deployment; multiple workers would need a shared store. Restricted Spotify artist enrichment calls fail independently so basic artist details remain available.
+
+Lyrics expansion uses the documented LRCLIB API without a key, with exact artist matching, deduplication, source attribution, sequential throttling, and `Retry-After` handling. Genius is an optional fallback. The workflow retains existing data and reports a source outage if neither provider returns usable lyrics.
+
+Song details preserve both title and artist, including cross-artist recordings. iTunes provides metadata and previews when Spotify is unavailable. Recommendation track lists can be downloaded as CSV without signing in; Spotify playlist creation remains an optional account connection.
+
+The frontend includes Vercel Web Analytics. Collection requires enabling Web Analytics for the project in the Vercel dashboard.
+
+To run browser smoke tests locally, activate the backend virtual environment, then from `frontend/` run `npx playwright install chromium`, `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000 npm run build`, and `npm run test:smoke`. Playwright starts both servers automatically.
+
+The public source mirror at [updated-shubz-taylor-rec-engine](https://github.com/shubhangithub/updated-shubz-taylor-rec-engine) is synchronized after application changes and successful data refreshes. Publication uses an explicit file allowlist; internal agent notes, local credentials, and private-only inputs are excluded, and private Git history is never imported.
+
+## Public source mirror
+
+This repository is a sanitized source snapshot of the live application. Internal agent notes, local credentials, and private-only inputs are excluded. Production data refreshes run upstream; this copy retains a manual data workflow for reproducibility.

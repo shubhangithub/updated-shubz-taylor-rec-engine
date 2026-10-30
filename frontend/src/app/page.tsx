@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { API_URL, apiFetch } from '@/lib/connection';
+
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import VaultDoor from '@/components/VaultDoor';
@@ -199,7 +201,7 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState<Song[]>([]);
   const [editorialBridges, setEditorialBridges] = useState<EditorialBridge[]>([]);
   const [selectedBridge, setSelectedBridge] = useState<EditorialBridge | null>(null);
-  const [moodSongs, setMoodSongs] = useState<Record<string, string[]>>(FALLBACK_MOOD_SONGS);
+  const [moodSongs] = useState<Record<string, string[]>>(FALLBACK_MOOD_SONGS);
   const [eraArtists, setEraArtists] = useState<Record<string, EraArtist[]>>(FALLBACK_ERA_ARTISTS);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [isTourActive, setIsTourActive] = useState(false);
@@ -236,32 +238,14 @@ export default function Home() {
     }).catch(() => {});
   }, []);
 
-  // Fetch the backend's curated mood song lists (fallback already set).
-  // These had drifted from the backend MOOD_MAPPING because the API was never called.
-  useEffect(() => {
-    const moods = Object.keys(FALLBACK_MOOD_SONGS);
-    Promise.all(moods.map(async (mood) => {
-      const songs = await api.getMoodSongs(mood);
-      return [mood, songs] as const;
-    })).then(pairs => {
-      const next: Record<string, string[]> = {};
-      for (const [mood, songs] of pairs) {
-        if (songs && songs.length > 0) next[mood] = songs;
-      }
-      if (Object.keys(next).length > 0) {
-        setMoodSongs(prev => ({ ...prev, ...next }));
-      }
-    }).catch(() => {});
-  }, []);
-
   // Fetch dynamic era artists from ML engine
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const url = API_URL;
     const fetchEraArtists = async () => {
       const dynamic: Record<string, EraArtist[]> = {};
       for (const era of ALL_ERAS) {
         try {
-          const res = await fetch(`${url}/api/era-artists-dynamic/${encodeURIComponent(era)}`);
+          const res = await apiFetch(`${url}/api/era-artists-dynamic/${encodeURIComponent(era)}`);
           if (res.ok) {
             const data = await res.json();
             if (data.artists && data.artists.length > 0) {
@@ -278,16 +262,10 @@ export default function Home() {
   }, []);
 
   // Navigation
-  // Keep a ref to the current view so navigateTo can stay identity-stable.
-  // (When it depended on currentView it changed on every navigation, which
-  // re-triggered the guided tour's current step.)
-  const currentViewRef = useRef(currentView);
-  useEffect(() => { currentViewRef.current = currentView; }, [currentView]);
-
   const navigateTo = useCallback((view: View) => {
-    setViewHistory(prev => [...prev, currentViewRef.current]);
+    setViewHistory(prev => [...prev, currentView]);
     setCurrentView(view);
-  }, []);
+  }, [currentView]);
 
   const goBack = useCallback(() => {
     const prev = viewHistory[viewHistory.length - 1];
@@ -299,161 +277,39 @@ export default function Home() {
 
   const canGoBack = viewHistory.length > 0 && currentView !== 'vault' && currentView !== 'constellation';
 
-  // Monotonic id so a slow earlier load can't overwrite a newer selection
-  // (two quick song clicks previously raced).
-  const loadSeqRef = useRef(0);
-
-  // Shared helper: load full song data from API
-  const loadSongData = useCallback(async (songName: string, fallbackAlbum?: string) => {
-    const seq = ++loadSeqRef.current;
-    const isStale = () => seq !== loadSeqRef.current;
-    try {
-      // First try the dedicated song-data endpoint (has features + lyrics from dataset)
-      const dataRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/song-data/${encodeURIComponent(songName)}`);
-      let localData: any = null;
-      if (dataRes.ok) {
-        localData = await dataRes.json();
-      }
-
-      // Also search Spotify for album art + metadata
-      const results = await api.searchSongs(songName, 'Taylor Swift');
-      if (results.length > 0) {
-        const songInfo = await api.getSongInfo(results[0].id);
-        // Merge: Spotify data (image, urls) + local data (lyrics, features, atmosphere).
-        // getSongInfo returns a blank-named stub on error, so backfill core
-        // fields from local data / the requested name rather than showing "".
-        const merged = { ...songInfo };
-        if (!merged.name) merged.name = localData?.name || songName;
-        if (!merged.artist) merged.artist = localData?.artist || 'Taylor Swift';
-        if (!merged.album) merged.album = localData?.album || fallbackAlbum || '';
-        if (localData) {
-          if (localData.lyrics) merged.lyrics = localData.lyrics;
-          if (localData.atmosphere) merged.atmosphere = localData.atmosphere;
-          if (localData.danceability && (!merged.audio_features || Object.keys(merged.audio_features).length === 0)) {
-            (merged as any).audio_features = {
-              danceability: localData.danceability,
-              energy: localData.energy,
-              loudness: localData.loudness,
-              speechiness: localData.speechiness,
-              acousticness: localData.acousticness,
-              instrumentalness: localData.instrumentalness,
-              liveness: localData.liveness,
-              valence: localData.valence,
-              tempo: localData.tempo,
-            };
-          }
-          if (localData.key_mode) (merged as any).key_mode = localData.key_mode;
-          if (localData.explicit !== undefined) (merged as any).explicit = localData.explicit;
-        }
-        // Get ML-computed cross-artist recommendations instead of hardcoded bridges
-        try {
-          const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-          const recRes = await fetch(`${url}/api/engine/lyrics_transformer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ song_names: [songName], liked_songs: [], num_per_engine: 6 }),
-          });
-          if (recRes.ok) {
-            const recData = await recRes.json();
-            const recs = (recData.recommendations || [])
-              .filter((r: any) => r.artist !== 'Taylor Swift')
-              .slice(0, 4)
-              .map((r: any) => ({
-                artist: r.artist,
-                song: r.name,
-                reason: r.explanation || `${Math.round((r.similarity || 0) * 100)}% semantic lyrics match`,
-                mood: '',
-                era_connection: '',
-              }));
-            setEditorialBridges(recs);
-          } else {
-            setEditorialBridges([]);
-          }
-        } catch {
-          setEditorialBridges([]);
-        }
-        if (isStale()) return merged;
-        setSelectedSong(merged);
-        setRecommendations([]);
-        return merged;
-      } else if (localData) {
-        // No Spotify result but we have local data
-        const song: any = {
-          id: `local-${songName}`,
-          name: localData.name || songName,
-          artist: 'Taylor Swift',
-          album: localData.album || fallbackAlbum || '',
-          // The song-data response already carries an iTunes preview — use it
-          // instead of hardcoding null (which silenced audio for local songs).
-          preview_url: localData.preview_url || null,
-          external_url: '',
-          image: null,
-          lyrics: localData.lyrics,
-          atmosphere: localData.atmosphere,
-          audio_features: localData.danceability ? {
-            danceability: localData.danceability,
-            energy: localData.energy,
-            loudness: localData.loudness,
-            speechiness: localData.speechiness,
-            acousticness: localData.acousticness,
-            instrumentalness: localData.instrumentalness,
-            liveness: localData.liveness,
-            valence: localData.valence,
-            tempo: localData.tempo,
-          } : undefined,
-          key_mode: localData.key_mode,
-          explicit: localData.explicit,
-        };
-        if (isStale()) return song;
-        setSelectedSong(song);
-        // Get ML-computed cross-artist recommendations instead of hardcoded bridges
-        try {
-          const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-          const recRes = await fetch(`${url}/api/engine/lyrics_transformer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ song_names: [songName], liked_songs: [], num_per_engine: 6 }),
-          });
-          if (recRes.ok) {
-            const recData = await recRes.json();
-            const recs = (recData.recommendations || [])
-              .filter((r: any) => r.artist !== 'Taylor Swift')
-              .slice(0, 4)
-              .map((r: any) => ({
-                artist: r.artist,
-                song: r.name,
-                reason: r.explanation || `${Math.round((r.similarity || 0) * 100)}% semantic lyrics match`,
-                mood: '',
-                era_connection: '',
-              }));
-            setEditorialBridges(recs);
-          } else {
-            setEditorialBridges([]);
-          }
-        } catch {
-          setEditorialBridges([]);
-        }
-        setRecommendations([]);
-        return song;
-      }
-    } catch (e) {
-      console.error('Error loading song data:', e);
-    }
-
-    // Final fallback
-    if (isStale()) return null;
-    setSelectedSong({
-      id: `fallback-${songName}`,
-      name: songName,
-      artist: 'Taylor Swift',
-      album: fallbackAlbum || '',
-      preview_url: null,
-      external_url: '',
-      image: null,
-    });
-    setEditorialBridges([]);
+  // Preserve recording identity and playback even when Spotify is unavailable.
+  const loadSongData = useCallback(async (songName: string, fallbackAlbum?: string, artist = 'Taylor Swift') => {
+    const [dataResponse, tracks] = await Promise.all([
+      apiFetch(`${API_URL}/api/song-data/${encodeURIComponent(songName)}?artist=${encodeURIComponent(artist)}`)
+        .then(response => response.ok ? response.json() : null).catch(() => null),
+      api.searchSongs(songName, artist),
+    ]);
+    const track = tracks.find(candidate => candidate.artist.toLocaleLowerCase() === artist.toLocaleLowerCase()
+      && candidate.name.toLocaleLowerCase() === songName.toLocaleLowerCase());
+    const data = dataResponse || {};
+    const song: SongWithAtmosphere = {
+      id: track?.id || data.id || `local-${artist}-${songName}`,
+      name: data.name || track?.name || songName,
+      artist,
+      album: track?.album || data.album || fallbackAlbum || '',
+      preview_url: track?.preview_url || data.preview_url || null,
+      external_url: track?.external_url || data.external_url || `https://open.spotify.com/search/${encodeURIComponent(`${songName} ${artist}`)}`,
+      image: track?.image || data.image || null,
+      lyrics: data.lyrics,
+      atmosphere: data.atmosphere,
+      audio_features: data.danceability != null ? {
+        danceability: data.danceability, energy: data.energy, loudness: data.loudness,
+        speechiness: data.speechiness, acousticness: data.acousticness,
+        instrumentalness: data.instrumentalness, liveness: data.liveness,
+        valence: data.valence, tempo: data.tempo,
+      } : undefined,
+      key_mode: data.key_mode,
+      explicit: data.explicit,
+    };
+    setSelectedSong(song);
     setRecommendations([]);
-    return null;
+    setEditorialBridges(data.editorial_bridges || []);
+    return song;
   }, []);
 
   // Handle star click in constellation
@@ -479,8 +335,8 @@ export default function Home() {
     setCurrentView('constellation');
     // Load Enchanted in the background for auto-play (don't navigate to it)
     try {
-      const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${url}/api/song-data/${encodeURIComponent('Enchanted')}`);
+      const url = API_URL;
+      const res = await apiFetch(`${url}/api/song-data/${encodeURIComponent('Enchanted')}`);
       if (res.ok) {
         const data = await res.json();
         if (data.preview_url) {
@@ -553,7 +409,7 @@ export default function Home() {
                 try {
                   const info = await api.getSongInfo(id);
                   if (info.name) {
-                    await loadSongData(info.name);
+                    await loadSongData(info.name, info.album, info.artist);
                   }
                 } catch {}
               }}
@@ -609,8 +465,8 @@ export default function Home() {
           >
             <RecEngine
               catalog={catalog}
-              onSongClick={async (name) => {
-                await loadSongData(name);
+              onSongClick={async (name, artist) => {
+                await loadSongData(name, undefined, artist);
                 navigateTo('song');
               }}
             />
@@ -643,7 +499,7 @@ export default function Home() {
         {/* Trending */}
         {currentView === 'trending' && (
           <motion.div key="trending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-            <Trending onSongClick={async (name) => { await loadSongData(name); navigateTo('song'); }} />
+            <Trending onSongClick={async (name, artist) => { await loadSongData(name, undefined, artist); navigateTo('song'); }} />
           </motion.div>
         )}
 

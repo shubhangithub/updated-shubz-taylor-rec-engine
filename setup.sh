@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")"
 
 echo ""
 echo "  ✦ Music Matrix — Setup ✦"
@@ -23,7 +25,9 @@ if [ ! -f .env ]; then
   echo "  Create an app and copy the Client ID + Secret."
   echo ""
   read -p "  Spotify Client ID: " SPOTIFY_CLIENT_ID
-  read -p "  Spotify Client Secret: " SPOTIFY_CLIENT_SECRET
+  read -s -p "  Spotify Client Secret: " SPOTIFY_CLIENT_SECRET
+  echo ""
+  umask 077
   cat > .env << EOF
 SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID
 SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
@@ -36,7 +40,7 @@ cd ..
 # Frontend setup
 echo "→ Setting up frontend..."
 cd frontend
-npm install --silent
+npm ci
 
 if [ ! -f .env.local ]; then
   cat > .env.local << EOF

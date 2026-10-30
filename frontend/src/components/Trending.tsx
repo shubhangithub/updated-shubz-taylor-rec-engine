@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL, apiFetch } from '@/lib/connection';
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Sparkles, ArrowUpRight, Music } from 'lucide-react';
@@ -26,23 +28,22 @@ interface TrendingData {
 }
 
 interface TrendingProps {
-  onSongClick: (songName: string) => void;
+  onSongClick: (songName: string, artist?: string) => void;
 }
 
 export default function Trending({ onSongClick }: TrendingProps) {
   const [data, setData] = useState<TrendingData | null>(null);
   const [recs, setRecs] = useState<Record<string, any[]>>({});
-  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    fetch(`${url}/api/trending`)
-      .then(r => r.ok ? r.json() : Promise.reject(new Error('bad status')))
+    const url = API_URL;
+    apiFetch(`${url}/api/trending`)
+      .then(r => r.ok ? r.json() : null)
       .then(d => {
         setData(d);
         // Get ML recommendations for the #1 song
         if (d?.songs?.[0]) {
-          fetch(`${url}/api/engine/lyrics_transformer`, {
+          apiFetch(`${url}/api/engine/lyrics_transformer`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ song_names: [d.songs[0].name], liked_songs: [], num_per_engine: 4 }),
@@ -56,18 +57,8 @@ export default function Trending({ onSongClick }: TrendingProps) {
             .catch(() => {});
         }
       })
-      .catch(() => setFailed(true));
+      .catch(() => {});
   }, []);
-
-  if (failed) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center px-6">
-        <p className="text-white/30 font-display text-lg text-center">
-          Couldn&apos;t load trending data. The backend may be waking up — try again in a minute.
-        </p>
-      </div>
-    );
-  }
 
   if (!data || !data.songs?.length) {
     return (
@@ -82,20 +73,17 @@ export default function Trending({ onSongClick }: TrendingProps) {
   const topRecs = recs[topSong.name] || [];
 
   return (
-    <div className="fixed inset-0 overflow-y-auto">
-      <div className="min-h-screen px-6 md:px-12 pt-20 pb-24 max-w-4xl mx-auto">
+    <div className="fixed inset-0 overflow-y-auto scroll-pt-20 scroll-pb-56">
+      <div className="min-h-screen px-6 md:px-12 pt-20 pb-56 md:pb-32 max-w-4xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp size={24} className="text-[#D4AF37]" />
-            <h1 className="font-display text-4xl md:text-5xl text-white/80">This Week on iTunes</h1>
+            <h1 className="font-display text-4xl md:text-5xl text-white/80">Trending Now</h1>
           </div>
           <p className="text-white/30 text-sm tracking-wider">
-            Taylor&apos;s top iTunes catalog results this week — and what the engines think you&apos;d love alongside them.
+            What&apos;s hot in Taylor&apos;s catalog right now — and what the engines think you&apos;d love alongside it.
             <span className="text-white/15 ml-2">Updated {data.date}</span>
-          </p>
-          <p className="text-white/15 text-[11px] mt-1">
-            Ranked by iTunes search relevance (no public chart API), so week-over-week movement reflects catalog reshuffling, not sales.
           </p>
         </motion.div>
 
@@ -161,7 +149,7 @@ export default function Trending({ onSongClick }: TrendingProps) {
                 {topRecs.map((rec, i) => (
                   <motion.button
                     key={rec.name}
-                    onClick={() => onSongClick(rec.name)}
+                    onClick={() => onSongClick(rec.name, rec.artist)}
                     className="glass glass-hover rounded-lg p-3 text-left transition-all duration-300 group"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

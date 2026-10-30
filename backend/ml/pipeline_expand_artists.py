@@ -1,10 +1,10 @@
 """
 Pipeline: Expand cross-artist pool.
 Finds 3-5 new artists related to ones already in our corpus,
-scrapes their top songs from Genius, appends to cross_artist_lyrics.json.
+fetches their lyrics from LRCLIB, with an optional Genius fallback, appends to cross_artist_lyrics.json.
 
 Run: cd backend && python -m ml.pipeline_expand_artists
-Requires: GENIUS_ACCESS_TOKEN, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+LRCLIB needs no key. Spotify/Genius credentials are optional.
 """
 import json
 import os
@@ -64,7 +64,7 @@ def get_related_artists_spotify(seed_artists: list, existing_artists: set) -> li
         return []
 
 
-def scrape_lyrics(artist_name: str, max_songs: int = SONGS_PER_ARTIST) -> list:
+def scrape_genius_lyrics(artist_name: str, max_songs: int = SONGS_PER_ARTIST) -> list:
     """Scrape top songs for an artist from Genius."""
     token = os.getenv("GENIUS_ACCESS_TOKEN")
     if not token:
@@ -109,9 +109,21 @@ def scrape_lyrics(artist_name: str, max_songs: int = SONGS_PER_ARTIST) -> list:
                 "lyrics": clean,
             })
     except Exception as e:
-        logger.error(f"Genius scrape failed for {artist_name}: {e}")
+        logger.error("Genius scrape failed for %s (%s). The provider may be blocking automated access.",
+                     artist_name, type(e).__name__)
 
     return songs
+
+
+def scrape_lyrics(artist_name: str, max_songs: int = SONGS_PER_ARTIST) -> list:
+    from app.lyrics_sources import get_artist_lyrics
+    songs = get_artist_lyrics(artist_name, max_songs)
+    if songs:
+        logger.info("LRCLIB returned %s songs for %s", len(songs), artist_name)
+        return songs
+    if os.getenv('GENIUS_ACCESS_TOKEN'):
+        return scrape_genius_lyrics(artist_name, max_songs)
+    return []
 
 
 def main():
@@ -156,20 +168,29 @@ def main():
         logger.info(f"  Scraping {artist_name}...")
         songs = scrape_lyrics(artist_name)
         if songs:
-            existing.extend(songs)
-            total_added += len(songs)
+            from app.lyrics_sources import normalize
+            known = {(normalize(s.get('name', '')), normalize(s.get('artist', ''))) for s in existing}
+            fresh = []
+            for song in songs:
+                key = (normalize(song['name']), normalize(song['artist']))
+                if key not in known:
+                    fresh.append(song)
+                    known.add(key)
+            existing.extend(fresh)
+            total_added += len(fresh)
             logger.info(f"    Added {len(songs)} songs")
         else:
             logger.info(f"    No songs found")
         time.sleep(1)
 
-    # Save atomically: write to a temp file then os.replace, so a kill
-    # mid-write (e.g. the workflow's job timeout) can't truncate the corpus.
+    if total_added == 0:
+        logger.error("No new lyrics could be fetched from LRCLIB or Genius; existing corpus retained.")
+        raise SystemExit(1)
+
+    # Save
     os.makedirs(ML_DATA, exist_ok=True)
-    tmp_path = LYRICS_PATH + ".tmp"
-    with open(tmp_path, "w") as f:
+    with open(LYRICS_PATH, "w") as f:
         json.dump(existing, f, ensure_ascii=False)
-    os.replace(tmp_path, LYRICS_PATH)
 
     new_total_artists = len({s.get("artist", "").lower() for s in existing})
     logger.info(f"\nDone! Added {total_added} songs from {len(new_artists)} artists")

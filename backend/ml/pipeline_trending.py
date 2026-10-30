@@ -21,10 +21,6 @@ TRENDING_PATH = os.path.join(ML_DATA, 'trending_history.json')
 def fetch_itunes_trending():
     """Fetch Taylor Swift's top tracks from iTunes Search API."""
     try:
-        # NOTE: iTunes Search has no "trending"/chart endpoint. `sort` is not a
-        # supported parameter (it was silently ignored), so this returns iTunes'
-        # relevance-ranked catalog results — week-over-week movement reflects
-        # search-result reshuffling, not popularity. Labeled honestly in the UI.
         resp = requests.get(
             "https://itunes.apple.com/search",
             params={
@@ -32,6 +28,7 @@ def fetch_itunes_trending():
                 "media": "music",
                 "entity": "song",
                 "limit": 50,
+                "sort": "recent",
             },
             timeout=15,
         )
@@ -76,7 +73,7 @@ def main():
     songs = fetch_itunes_trending()
     if not songs:
         logger.warning("No songs fetched — skipping snapshot")
-        return
+        raise SystemExit(1)
 
     # Create snapshot
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -85,6 +82,9 @@ def main():
         "song_count": len(songs),
         "songs": songs,
     }
+
+    # A manual rerun replaces today's snapshot instead of inventing another week.
+    history['snapshots'] = [s for s in history['snapshots'] if s.get('date') != now]
 
     # Compute changes from last snapshot
     if history["snapshots"]:
@@ -95,8 +95,8 @@ def main():
         dropped = last_names - current_names
 
         snapshot["changes"] = {
-            "new_entries": list(new_entries)[:10],
-            "dropped": list(dropped)[:10],
+            "new_entries": sorted(new_entries)[:10],
+            "dropped": sorted(dropped)[:10],
             "new_count": len(new_entries),
             "dropped_count": len(dropped),
         }

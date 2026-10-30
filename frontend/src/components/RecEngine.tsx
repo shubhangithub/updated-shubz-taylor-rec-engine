@@ -1,6 +1,10 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { playlistCsv } from '@/lib/playlistExport';
+import { exportSpotifyPlaylist } from '@/lib/spotify';
+import { API_URL, apiFetch } from '@/lib/connection';
+
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Plus, Sparkles, Heart, ChevronRight, ExternalLink, Star, Loader2, Zap, Users, BookOpen, ToggleLeft, Info, Columns, Download, Music } from 'lucide-react';
 import { TaylorSong, Song, EditorialBridge, CompareResponse } from '@/lib/types';
@@ -10,10 +14,10 @@ import ComparisonGrid from './ComparisonGrid';
 
 interface RecEngineProps {
   catalog: TaylorSong[];
-  onSongClick: (songName: string) => void;
+  onSongClick: (songName: string, artist?: string) => void;
 }
 
-type RecMode = 'lyrics_transformer' | 'qwen3_embed' | 'clap_audio' | 'vae_latent' | 'graph_node2vec' | 'ncf' | 'ensemble' | 'contrastive';
+type RecMode = 'lyrics_transformer' | 'vae_latent' | 'graph_node2vec' | 'ncf' | 'ensemble' | 'contrastive';
 
 interface RecResult {
   name: string;
@@ -38,32 +42,16 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     label: 'Transformer Lyrics',
     icon: <Zap size={16} />,
     color: '#E53E3E',
-    description: '384-dim semantic lyric embeddings',
-    longDesc: 'Encodes all 1,056 song lyrics (341 Taylor + 715 cross-artist) into 384-dimensional semantic vectors using all-MiniLM-L6-v2 (sentence-transformers). Finds songs with similar meaning — "heartbreak in autumn" matches even with no shared words. Paper: Reimers & Gurevych (2019) Sentence-BERT, EMNLP.',
-  },
-  {
-    key: 'qwen3_embed',
-    label: 'Qwen3 Embeddings',
-    icon: <Zap size={16} />,
-    color: '#38B2AC',
-    description: '1024-dim modern lyric embeddings',
-    longDesc: 'The 2025-era counterpart to Transformer Lyrics: Qwen3-Embedding-0.6B encodes the FULL lyrics of all 1,056 songs (32K-token context — MiniLM truncates at 256 wordpieces, so it never sees bridges or outros). Same corpus, six years of encoder progress, side by side. Paper: Zhang et al. (2025) Qwen3 Embedding, arXiv:2506.05176.',
-  },
-  {
-    key: 'clap_audio',
-    label: 'CLAP Audio',
-    icon: <Music size={16} />,
-    color: '#ECC94B',
-    description: '512-dim audio embeddings — it hears the song',
-    longDesc: 'The only engine that listens instead of reads: CLAP (laion/larger_clap_music) embeds each song\'s 30-second preview into a joint audio-text space. Song-to-song sound similarity, plus mood search where text prompts score directly against audio. Covers songs with an available preview. Paper: Wu et al. (2023) CLAP, ICASSP.',
+    description: '384-dim BERT semantic embeddings',
+    longDesc: 'Encodes all 341 song lyrics into 384-dimensional semantic vectors using all-MiniLM-L6-v2 (Sentence-BERT). Finds songs with similar meaning — "heartbreak in autumn" matches even with no shared words. Paper: Reimers & Gurevych (2019) Sentence-BERT, EMNLP.',
   },
   {
     key: 'vae_latent',
     label: 'VAE Latent Space',
     icon: <Sparkles size={16} />,
     color: '#9F7AEA',
-    description: '16-dim learned lyrics latent space',
-    longDesc: 'A Variational Autoencoder trained on the 384-dim lyrics embeddings learns a 16-dimensional latent space (24:1 compression) where songs cluster by non-linear structure cosine similarity misses. Encoder: 384→128→64→16, β=0.1 with KL warm-up to avoid posterior collapse. Paper: Kingma & Welling (2013) Auto-Encoding Variational Bayes, ICLR 2014.',
+    description: '16-dim compressed lyrics latent space',
+    longDesc: 'The shipped Variational Autoencoder compresses 384-dimensional BERT lyrics vectors into a 16-dimensional latent space across 801 songs. Trained with reconstruction + KL divergence loss. Paper: Roberts et al. (2017) Hierarchical VAEs for Music, NIPS.',
   },
   {
     key: 'graph_node2vec',
@@ -71,7 +59,7 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     icon: <Users size={16} />,
     color: '#48BB78',
     description: '64-dim graph structural embeddings',
-    longDesc: 'Builds a sparse MULTI-ARTIST song graph over all 1,056 songs (lyric-similarity backbone + audio, era, and editorial-bridge edges), runs second-order biased random walks (p=1, q=2), trains skip-gram Word2Vec to learn 64-dim structural embeddings. Surfaces cross-artist neighbours via multi-hop paths: "Song A → Song B → Song C". Paper: Grover & Leskovec (2016) node2vec, KDD.',
+    longDesc: 'Builds a song similarity graph (323 nodes, feature/era/bridge edges), runs biased random walks (p=1, q=2), trains Word2Vec on walks to learn 64-dim structural embeddings. Captures multi-hop: "Song A → Song B → Song C" transitive similarity. Paper: Grover & Leskovec (2016) node2vec, KDD.',
   },
   {
     key: 'ncf',
@@ -79,23 +67,23 @@ const REC_MODES: { key: RecMode; label: string; icon: React.ReactNode; color: st
     icon: <BookOpen size={16} />,
     color: '#5B9BD5',
     description: '48-dim MLP interaction embeddings',
-    longDesc: 'Adapts the MLP interaction function of Neural Collaborative Filtering to song-song pairs — no real users or listening data. 48-dim embeddings are PCA-initialized from 393-dim multi-modal features (384 lyrics + 9 audio) and fine-tuned on ~5,000 synthetic pairs from lyrics similarity, audio similarity, and editorial bridges. Paper: He et al. (2017) NCF, WWW (adapted).',
+    longDesc: 'Trains a neural network (MLP) on synthetic song interactions derived from editorial bridges, era co-occurrence, and feature similarity. The shipped model uses 48-dimensional embeddings across 801 songs to encode collaborative patterns. Negative sampling ensures the model distinguishes similar from dissimilar. Paper: He et al. (2017) Neural Collaborative Filtering, WWW.',
   },
   {
     key: 'ensemble',
     label: 'Hybrid Ensemble',
     icon: <BookOpen size={16} />,
     color: '#ED8936',
-    description: 'Weighted blend of all 7 embedding engines',
-    longDesc: 'Runs all 7 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Truly dynamic — different results each query. Based on Burke (2002) hybrid recommender architecture.',
+    description: 'Weighted blend of all 5 engines',
+    longDesc: 'Runs all 5 embedding engines at query time, merges results with weighted rank aggregation. Songs found by 3+ engines get a consensus boost. Truly dynamic — different results each query. Based on Burke (2002) hybrid recommender architecture.',
   },
   {
     key: 'contrastive',
     label: 'Contrastive SSL',
     icon: <Sparkles size={16} />,
     color: '#F687B3',
-    description: '64-dim SimCLR-style on augmented lyrics',
-    longDesc: 'Applies the SimCLR recipe to lyrics with a frozen MiniLM encoder: creates augmented views (20% word dropout, line shuffle, section removal), trains a projection head (384→128→64) with NT-Xent InfoNCE loss (τ=0.07). Learns representations robust to word dropout and line reordering. Paper: Chen et al. (2020) SimCLR, ICML — inspired by Spijkervet & Burgoyne (2021) CLMR, ISMIR.',
+    description: '64-dim SimCLR on augmented lyrics',
+    longDesc: 'Adapts SimCLR contrastive learning to lyrics: creates augmented views (20% word dropout, sentence shuffle, section removal), trains a projection head (384→128→64) with NT-Xent InfoNCE loss (τ=0.07). Learns representations INVARIANT to surface-level changes — captures what makes a song\'s meaning stable. Paper: Spijkervet & Burgoyne (2021) CLMR, ISMIR + Chen et al. (2020) SimCLR, ICML.',
   },
 ];
 
@@ -143,19 +131,14 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
   const [selectedSongs, setSelectedSongs] = useState<TaylorSong[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [recMode, setRecMode] = useState<RecMode>('lyrics_transformer');
-  // Only show engines the backend has actually registered (CLAP audio is
-  // conditional on its embeddings existing). Null = not loaded yet → show all.
-  const [liveEngineKeys, setLiveEngineKeys] = useState<string[] | null>(null);
-  useEffect(() => {
-    api.getEngineKeys().then(keys => { if (keys) setLiveEngineKeys(keys); });
-  }, []);
-  const availableModes = REC_MODES.filter(m => !liveEngineKeys || liveEngineKeys.includes(m.key));
   const [results, setResults] = useState<RecResult[]>([]);
   const [editorialResults, setEditorialResults] = useState<EditorialBridge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
+  const [spotifyError, setSpotifyError] = useState<string | null>(null);
   const [spotifyExporting, setSpotifyExporting] = useState(false);
-  const [spotifyResult, setSpotifyResult] = useState<{url: string; count: number; error?: string} | null>(null);
+  const [spotifyResult, setSpotifyResult] = useState<{url: string; count: number} | null>(null);
   const [showModeInfo, setShowModeInfo] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [compareData, setCompareData] = useState<CompareResponse | null>(null);
@@ -184,32 +167,19 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
   const runComparison = useCallback(async () => {
     if (selectedSongs.length === 0) return;
     setIsLoading(true);
+    setRecommendationError(null);
+    setSpotifyError(null);
+    setSpotifyResult(null);
     setHasSearched(true);
     setCompareData(null);
 
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-    const songIds: string[] = [];
-    for (const song of selectedSongs.slice(0, 3)) {
-      try {
-        const res = await fetch(`${url}/api/search`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: song.name, artist: 'Taylor Swift' }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.results?.[0]?.id) songIds.push(data.results[0].id);
-        }
-      } catch {}
-    }
-
     const result = await api.compareEngines(
-      songIds,
+      [],
       selectedSongs.map(s => s.name),
       6
     );
     if (result) setCompareData(result);
+    else setRecommendationError('The comparison could not load. Please retry in a moment.');
     setIsLoading(false);
   }, [selectedSongs]);
 
@@ -221,14 +191,17 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
     }
 
     setIsLoading(true);
+    setRecommendationError(null);
+    setSpotifyError(null);
+    setSpotifyResult(null);
     setHasSearched(true);
     setResults([]);
     setEditorialResults([]);
 
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const url = API_URL;
 
     try {
-      const res = await fetch(`${url}/api/engine/${recMode}`, {
+      const res = await apiFetch(`${url}/api/engine/${recMode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -237,12 +210,11 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
           num_per_engine: 12,
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setResults(data.recommendations || []);
-      }
+      if (!res.ok) throw new Error('Recommendation request failed');
+      const data = await res.json();
+      setResults(data.recommendations || []);
     } catch (e) {
-      console.error('Recommendation error:', e);
+      setRecommendationError('Recommendations could not load. Please retry in a moment.');
     } finally {
       setIsLoading(false);
     }
@@ -263,11 +235,12 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
   const currentMode = REC_MODES.find(m => m.key === recMode)!;
 
   return (
-    <div className="fixed inset-0 overflow-y-auto">
+    <div className="fixed inset-0 overflow-y-auto scroll-pt-20 scroll-pb-56">
+      {recommendationError && <p role="alert" className="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-black/90 p-4 text-sm text-red-300">{recommendationError}</p>}
       {/* Ambient floating particles */}
       <AmbientParticles />
 
-      <div className="min-h-screen px-6 md:px-12 pt-20 pb-24 max-w-4xl mx-auto relative z-10">
+      <div className="min-h-screen px-6 md:px-12 pt-20 pb-56 md:pb-32 max-w-4xl mx-auto relative z-10">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <h1 className="font-display text-4xl md:text-5xl text-white/80 mb-2">Recommend Me</h1>
@@ -305,7 +278,7 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
-            {availableModes.map((mode) => {
+            {REC_MODES.map((mode) => {
               const isActive = recMode === mode.key;
               return (
                 <motion.button
@@ -498,12 +471,12 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
                     />
                   ))}
                 </span>
-                {compareMode ? 'Running all 4 engines...' : `Running ${currentMode.label} engine...`}
+                {compareMode ? 'Running all 6 engines...' : `Running ${currentMode.label} engine...`}
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
                 {currentMode.icon}
-                {selectedSongs.length === 0 ? 'Add songs to get started' : compareMode ? 'Compare All 4 Engines' : `Find via ${currentMode.label}`}
+                {selectedSongs.length === 0 ? 'Add songs to get started' : compareMode ? 'Compare All 6 Engines' : `Find via ${currentMode.label}`}
               </span>
             )}
           </motion.button>
@@ -546,51 +519,37 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
                 )}
                 {results.length > 0 && (
                   <button
+                    onClick={() => {
+                      const objectUrl = URL.createObjectURL(new Blob([playlistCsv(results)], { type: 'text/csv;charset=utf-8' }));
+                      const link = document.createElement('a');
+                      link.href = objectUrl;
+                      link.download = `recommendations-${currentMode.key}.csv`;
+                      link.click();
+                      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                    }}
+                    className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white/70"
+                  >
+                    <Download size={12} /> Download track list
+                  </button>
+                )}
+                {results.length > 0 && (
+                  <button
                     onClick={async () => {
-                      const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
                       setSpotifyExporting(true);
                       setSpotifyResult(null);
+                      setSpotifyError(null);
                       try {
-                        // Obtain a per-session id from the OAuth popup via postMessage.
-                        const backendOrigin = new URL(url).origin;
-                        const sessionId = await new Promise<string | null>((resolve) => {
-                          const popup = window.open(`${url}/api/spotify/login`, 'spotify-auth', 'width=500,height=700');
-                          let settled = false;
-                          const onMessage = (e: MessageEvent) => {
-                            if (e.origin !== backendOrigin) return;
-                            if (e.data?.type !== 'spotify-auth') return;
-                            settled = true;
-                            window.removeEventListener('message', onMessage);
-                            clearInterval(check);
-                            resolve(e.data.ok ? e.data.sessionId : null);
-                          };
-                          window.addEventListener('message', onMessage);
-                          const check = setInterval(() => {
-                            if (!popup || popup.closed) {
-                              clearInterval(check);
-                              if (!settled) { window.removeEventListener('message', onMessage); resolve(null); }
-                            }
-                          }, 500);
-                        });
-                        if (!sessionId) {
-                          setSpotifyResult({ url: '', count: 0, error: 'Spotify sign-in was cancelled or failed.' });
-                          setSpotifyExporting(false);
-                          return;
-                        }
-                        const songs = results.map(r => `${r.name} ${r.artist}`);
-                        const res = await fetch(`${url}/api/spotify/create-playlist`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ session_id: sessionId, songs, name: `Shubz-Taylor: ${currentMode.label} Picks`, description: `Generated by The Shubz-Taylor Recommendation Engine using ${currentMode.label} engine` }),
-                        });
-                        if (res.ok) {
-                          const data = await res.json();
-                          setSpotifyResult({ url: data.playlist_url, count: data.tracks_added });
-                        } else {
-                          setSpotifyResult({ url: '', count: 0, error: 'Could not create the playlist.' });
-                        }
-                      } catch (e) { console.error('Spotify export error:', e); setSpotifyResult({ url: '', count: 0, error: 'Spotify export failed.' }); }
-                      setSpotifyExporting(false);
+                        const data = await exportSpotifyPlaylist(
+                          results.map(r => `${r.name} ${r.artist}`),
+                          `Shubz-Taylor: ${currentMode.label} Picks`,
+                          `Generated by The Shubz-Taylor Recommendation Engine using ${currentMode.label} engine`
+                        );
+                        setSpotifyResult({ url: data.playlist_url, count: data.tracks_added });
+                      } catch (error) {
+                        setSpotifyError(error instanceof Error ? error.message : 'Spotify export failed. Please retry.');
+                      } finally {
+                        setSpotifyExporting(false);
+                      }
                     }}
                     disabled={spotifyExporting}
                     className="flex items-center gap-1 text-[10px] text-green-400/40 hover:text-green-400/70 transition-colors"
@@ -611,7 +570,16 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
                       animate={{ opacity: 1, x: 0, scale: 1 }}
                       transition={{ delay: 0.1 + i * 0.04 }}
                       className="glass rounded-xl p-4 transition-all duration-300 group cursor-pointer relative overflow-hidden"
-                      onClick={() => onSongClick(rec.name)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Explore ${rec.name} by ${rec.artist}`}
+                      onKeyDown={event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onSongClick(rec.name, rec.artist);
+                        }
+                      }}
+                      onClick={() => onSongClick(rec.name, rec.artist)}
                       whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
                     >
                       {/* Left accent bar — scales in on hover */}
@@ -665,22 +633,17 @@ export default function RecEngine({ catalog, onSongClick }: RecEngineProps) {
                   No recommendations found with {currentMode.label} engine. Try different songs or switch engines!
                 </p>
               )}
+              {spotifyError && <p role="alert" className="text-sm text-red-300 mt-3">{spotifyError}</p>}
               {spotifyResult && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  className={`glass rounded-xl p-4 flex items-center gap-3 border ${spotifyResult.error ? 'border-red-500/20' : 'border-green-500/20'}`}>
-                  <Music size={18} className={spotifyResult.error ? 'text-red-400' : 'text-green-400'} />
+                  className="glass rounded-xl p-4 flex items-center gap-3 border border-green-500/20">
+                  <Music size={18} className="text-green-400" />
                   <div>
-                    {spotifyResult.error ? (
-                      <p className="text-sm text-red-400">{spotifyResult.error}</p>
-                    ) : (
-                      <>
-                        <p className="text-sm text-green-400">Playlist created! {spotifyResult.count} tracks added</p>
-                        <a href={spotifyResult.url} target="_blank" rel="noopener noreferrer"
-                          className="text-xs text-green-400/60 hover:text-green-400 underline">
-                          Open in Spotify
-                        </a>
-                      </>
-                    )}
+                    <p className="text-sm text-green-400">Playlist created! {spotifyResult.count} tracks added</p>
+                    <a href={spotifyResult.url} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-green-400/60 hover:text-green-400 underline">
+                      Open in Spotify
+                    </a>
                   </div>
                 </motion.div>
               )}

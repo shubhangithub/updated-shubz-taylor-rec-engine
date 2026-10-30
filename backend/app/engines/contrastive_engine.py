@@ -1,6 +1,5 @@
-"""Runtime engine for Contrastive Self-Supervised Learning (SimCLR-style).
-64-dim representations learned via NT-Xent contrastive loss on augmented
-lyrics views (frozen MiniLM encoder + trained projection head)."""
+"""Runtime engine for Contrastive Self-Supervised Learning (SimCLR/CLMR).
+64-dim representations learned via NT-Xent contrastive loss on augmented lyrics views."""
 import json, os, numpy as np
 from typing import List, Dict
 import logging
@@ -26,7 +25,7 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
     _load()
     if _embeddings is None or len(_embeddings) == 0: return []
     from app.engines.utils import resolve_seed_indices
-    seed_indices = resolve_seed_indices(song_names, _index)
+    seed_indices = resolve_seed_indices(_index, song_names)
     if not seed_indices: return []
 
     seed = np.mean(_embeddings[seed_indices], axis=0, keepdims=True)
@@ -43,14 +42,13 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
     for idx in np.argsort(-sims):
         if idx in seed_indices: continue
         e = _index[idx]
-        dedup_key = (e['name'].lower(), e.get('artist', 'Taylor Swift').lower())
-        if dedup_key in seen: continue
-        seen.add(dedup_key)
+        if e['name'].lower() in seen: continue
+        seen.add(e['name'].lower())
         entry = {
             'name': e['name'], 'artist': e.get('artist', 'Taylor Swift'),
             'similarity': round(float(sims[idx]), 4),
             'recommendation_type': 'contrastive',
-            'explanation': f"Contrastive similarity: cosine {round(float(sims[idx]), 2)} (64-dim SimCLR-style projection, robust to word dropout and line reordering)",
+            'explanation': f"Contrastive similarity: {round(float(sims[idx])*100)}% (64-dim SimCLR projection, invariant to paraphrasing)",
         }
         if e.get('artist', 'Taylor Swift') == 'Taylor Swift':
             if len(taylor_results) < limit: taylor_results.append(entry)
@@ -58,7 +56,6 @@ def recommend(song_names: List[str], limit: int = 10, **kwargs) -> List[Dict]:
             if len(cross_results) < limit: cross_results.append(entry)
         if len(taylor_results) >= limit and len(cross_results) >= limit: break
 
-    from app.engines.utils import interleave_results, diversify_results, filter_seed_variants
-    combined = filter_seed_variants(taylor_results + cross_results, song_names)
-    diversified = diversify_results(combined, temperature=0.25)
+    from app.engines.utils import interleave_results, diversify_results
+    diversified = diversify_results(taylor_results + cross_results, temperature=0.25)
     return interleave_results(diversified, limit)

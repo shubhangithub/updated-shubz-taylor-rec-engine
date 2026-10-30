@@ -1,5 +1,7 @@
 'use client';
 
+import { API_URL, apiFetch } from '@/lib/connection';
+
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, TrendingUp, BarChart3, Brain, FileText, ChevronRight } from 'lucide-react';
@@ -14,26 +16,15 @@ interface InsightData {
 
 export default function Insights() {
   const [data, setData] = useState<InsightData | null>(null);
-  const [failed, setFailed] = useState(false);
   const [activePost, setActivePost] = useState<string | null>(null);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    fetch(`${url}/api/insights`)
-      .then(r => r.ok ? r.json() : Promise.reject(new Error('bad status')))
+    const url = API_URL;
+    apiFetch(`${url}/api/insights`)
+      .then(r => r.ok ? r.json() : null)
       .then(d => setData(d))
-      .catch(() => setFailed(true));
+      .catch(() => {});
   }, []);
-
-  if (failed) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center px-6">
-        <p className="text-white/30 font-display text-lg text-center">
-          Couldn&apos;t load insights. The backend may be waking up — try again in a minute.
-        </p>
-      </div>
-    );
-  }
 
   if (!data) {
     return (
@@ -51,8 +42,8 @@ export default function Insights() {
   ];
 
   return (
-    <div className="fixed inset-0 overflow-y-auto">
-      <div className="min-h-screen px-6 md:px-12 pt-20 pb-24 max-w-4xl mx-auto">
+    <div className="fixed inset-0 overflow-y-auto scroll-pt-20 scroll-pb-56">
+      <div className="min-h-screen px-6 md:px-12 pt-20 pb-56 md:pb-32 max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <h1 className="font-display text-4xl md:text-5xl text-white/80 mb-2">Insights</h1>
           <p className="text-white/30 text-sm tracking-wider">
@@ -89,7 +80,7 @@ export default function Insights() {
         >
           <p className="text-[10px] tracking-[0.2em] uppercase text-white/25 mb-2">Methodology</p>
           <p className="text-xs text-white/30 leading-relaxed">
-            All audio features are from Spotify&apos;s official API (danceability, energy, valence, acousticness, speechiness, instrumentalness, liveness, tempo, loudness). Audio statistics cover {data.acousticness_ucurve?.n_songs || 317} album songs across 11 of 12 studio-album eras (2006–2024; The Life Of A Showgirl lacks Spotify audio features). Era-level regressions use scipy on era means and are descriptive; song-level correlations report n and p. Lyric-density statistics use raw lyric word counts; the 341 Whisper-synchronized songs power the karaoke view.
+            All audio features are from Spotify&apos;s official API (danceability, energy, valence, acousticness, speechiness, instrumentalness, liveness, tempo, loudness). Statistics computed across {data.acousticness_ucurve?.n_songs || 323} songs spanning 12 studio albums (2006-2025). Regression analysis uses numpy polyfit. Lyrics analysis uses 341 Whisper-synchronized songs with 11,689 timestamped lyric lines.
           </p>
         </motion.div>
       </div>
@@ -183,9 +174,9 @@ function InsightPost({ insight, icon, color, isExpanded, onToggle }: {
               {/* Stats row */}
               <div className="flex flex-wrap gap-4 text-xs text-white/20">
                 {insight.n_songs && <span>n = {insight.n_songs} songs</span>}
-                {insight.regression?.r_squared && <span>R² = {insight.regression.r_squared} ({insight.n_eras || insight.data_points?.length} era means, descriptive)</span>}
-                {insight.trend?.r_squared && <span>R² = {insight.trend.r_squared}{insight.trend.p_value !== undefined ? `, p = ${insight.trend.p_value}` : ''}</span>}
-                {insight.valence_lyrics_correlation && <span>r = {insight.valence_lyrics_correlation}{insight.correlation_n ? ` (n = ${insight.correlation_n}, p = ${insight.correlation_p})` : ''}</span>}
+                {insight.regression?.r_squared && <span>R² = {insight.regression.r_squared}</span>}
+                {insight.trend?.r_squared && <span>R² = {insight.trend.r_squared}</span>}
+                {insight.valence_lyrics_correlation && <span>r = {insight.valence_lyrics_correlation}</span>}
               </div>
             </div>
           </motion.div>

@@ -1,47 +1,6 @@
 """Shared utilities for recommendation engines."""
-import re
 from typing import List, Dict
-
-
-def base_title(name: str) -> str:
-    """Strip re-recording / edition / version markers to a song's base title.
-
-    "All Too Well (10 Minute Version) [Taylor's Version] [From The Vault]" and
-    "All Too Well" collapse to the same base, so an engine won't recommend a
-    seed song's own re-recording straight back as the top match.
-    """
-    s = (name or "").lower()
-    s = re.sub(r"[\(\[][^\)\]]*[\)\]]", " ", s)  # drop (…) and […] annotations
-    s = re.sub(r"\s*-\s*(taylor'?s version|from the vault|remix|acoustic|live|demo|piano version).*$", " ", s)
-    s = re.sub(r"[^a-z0-9]+", " ", s).strip()
-    return s
-
-
-def filter_seed_variants(results: List[Dict], seed_names: List[str]) -> List[Dict]:
-    """Drop results that are the same base song as any seed (re-recordings, edits)."""
-    seed_bases = {base_title(n) for n in seed_names}
-    return [r for r in results if base_title(r.get("name", "")) not in seed_bases]
-
-
-def resolve_seed_indices(song_names: List[str], index: List[Dict]) -> List[int]:
-    """Resolve seed song names to index positions.
-
-    Several titles exist for more than one artist (e.g. Taylor's "ivy" vs
-    Frank Ocean's "Ivy"). A naive {name: i} dict comprehension lets the LAST
-    occurrence win — and cross-artist entries come after Taylor's in every
-    index — so seeds silently resolved to the wrong artist's embedding.
-    Seeds arrive as bare names from the Taylor-centric UI, so on a name
-    collision the Taylor Swift entry wins; otherwise first occurrence.
-    """
-    by_name: Dict[str, int] = {}
-    for i, e in enumerate(index):
-        name = e['name'].lower()
-        if name not in by_name:
-            by_name[name] = i
-        elif (index[by_name[name]].get('artist') != 'Taylor Swift'
-              and e.get('artist') == 'Taylor Swift'):
-            by_name[name] = i
-    return [by_name[n.lower()] for n in song_names if n.lower() in by_name]
+import math
 
 
 def diversify_results(results: List[Dict], temperature: float = 0.3) -> List[Dict]:
@@ -82,6 +41,9 @@ def interleave_results(results: List[Dict], limit: int = 10) -> List[Dict]:
     Given a ranked list of results, interleave Taylor and cross-artist
     so the user always sees a mix. Guarantees at least 40% cross-artist if available.
     """
+    if limit <= 0:
+        return []
+
     taylor = [r for r in results if r.get('artist', '') == 'Taylor Swift']
     cross = [r for r in results if r.get('artist', '') != 'Taylor Swift']
 
@@ -91,7 +53,7 @@ def interleave_results(results: List[Dict], limit: int = 10) -> List[Dict]:
         return cross[:limit]
 
     # Guarantee at least 40% cross-artist
-    cross_target = max(2, int(limit * 0.4))
+    cross_target = min(limit, max(1, math.ceil(limit * 0.4)))
     taylor_target = limit - cross_target
 
     # But don't exceed what we have
@@ -114,3 +76,16 @@ def interleave_results(results: List[Dict], limit: int = 10) -> List[Dict]:
             merged.append(taylor[ti]); ti += 1
 
     return merged[:limit]
+
+
+def resolve_seed_indices(index, song_names):
+    """Prefer Taylor's recording when a cross-artist song shares its name."""
+    name_map = {}
+    for i, entry in enumerate(index):
+        name = entry if isinstance(entry, str) else entry['name']
+        artist = 'Taylor Swift' if isinstance(entry, str) else entry.get('artist', 'Taylor Swift')
+        key = name.strip().casefold()
+        if key not in name_map or artist == 'Taylor Swift':
+            name_map[key] = i
+    return list(dict.fromkeys(name_map[name.strip().casefold()] for name in song_names
+                              if name.strip().casefold() in name_map))

@@ -9,13 +9,11 @@ import AgreementHeatmap from './AgreementHeatmap';
 
 interface ComparisonGridProps {
   data: CompareResponse;
-  onSongClick: (name: string) => void;
+  onSongClick: (name: string, artist?: string) => void;
 }
 
 const ENGINE_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   'lyrics_transformer': { label: 'Transformer Lyrics', color: '#E53E3E', icon: <Zap size={16} /> },
-  'qwen3_embed': { label: 'Qwen3 Embeddings', color: '#38B2AC', icon: <Zap size={16} /> },
-  'clap_audio': { label: 'CLAP Audio', color: '#ECC94B', icon: <Sparkles size={16} /> },
   'vae_latent': { label: 'VAE Latent', color: '#9F7AEA', icon: <Sparkles size={16} /> },
   'graph_node2vec': { label: 'Graph Node2Vec', color: '#48BB78', icon: <Users size={16} /> },
   'ncf': { label: 'Neural Collab', color: '#5B9BD5', icon: <BookOpen size={16} /> },
@@ -23,7 +21,7 @@ const ENGINE_META: Record<string, { label: string; color: string; icon: React.Re
   'contrastive': { label: 'Contrastive SSL', color: '#F687B3', icon: <Sparkles size={16} /> },
 };
 
-const ENGINE_ORDER = ['lyrics_transformer', 'qwen3_embed', 'clap_audio', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
+const ENGINE_ORDER = ['lyrics_transformer', 'vae_latent', 'graph_node2vec', 'ncf', 'ensemble', 'contrastive'];
 
 export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProps) {
   const overlapMap = useMemo(() => {
@@ -61,10 +59,8 @@ export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProp
         />
       </div>
 
-      {/* Seed features summary — hide when the backend returned all-zero
-          features (e.g. a Showgirl seed with no Spotify audio data), which
-          would otherwise render an empty, all-0% profile. */}
-      {data.seed_features && Object.values(data.seed_features).some(v => v > 0) && (
+      {/* Seed features summary */}
+      {data.seed_features && Object.keys(data.seed_features).length > 0 && (
         <motion.div
           initial={{ opacity: 0, filter: 'blur(4px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -135,13 +131,13 @@ export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProp
                         style={overlap >= 4 ? { boxShadow: '0 0 8px #D4AF3740' } : {}}
                       >
                         <Award size={8} className="text-[#D4AF37]" />
-                        <span className="text-[8px] text-[#D4AF37] font-mono">{overlap}/8</span>
+                        <span className="text-[8px] text-[#D4AF37] font-mono">{overlap}/6</span>
                       </motion.div>
                     )}
                     <ExplainabilityCard
                       result={result}
                       engineColor={meta.color}
-                      onClick={() => onSongClick(result.name)}
+                      onClick={() => onSongClick(result.name, result.artist)}
                     />
                   </motion.div>
                 );
@@ -174,7 +170,7 @@ export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProp
               .sort((a, b) => b[1].length - a[1].length)
               .slice(0, 8)
               .map(([key, engines], i) => {
-                const [name] = key.split('|||');
+                const [name, artist] = key.split('|||');
                 return (
                   <motion.span
                     key={key}
@@ -182,9 +178,9 @@ export default function ComparisonGrid({ data, onSongClick }: ComparisonGridProp
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.6 + i * 0.04 }}
-                    onClick={() => onSongClick(name)}
+                    onClick={() => onSongClick(name, artist)}
                   >
-                    {name} <span className="text-[#D4AF37] font-mono ml-1">{engines.length}/8</span>
+                    {name} <span className="text-[#D4AF37] font-mono ml-1">{engines.length}/6</span>
                   </motion.span>
                 );
               })}

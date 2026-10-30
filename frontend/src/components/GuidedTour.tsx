@@ -22,7 +22,7 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     narration: 'Welcome to The Shubz-Taylor Recommendation Engine',
-    subtext: 'A Taylor Swift-centric music discovery platform powered by 8 ML engines',
+    subtext: 'A Taylor Swift-centric music discovery platform powered by 6 ML engines',
     action: (props) => props.navigateTo('constellation'),
     duration: 4000,
   },
@@ -42,8 +42,8 @@ const TOUR_STEPS: TourStep[] = [
     duration: 5000,
   },
   {
-    narration: '8 ML Recommendation Engines',
-    subtext: 'Transformer Lyrics, Qwen3 Embeddings, CLAP Audio, VAE, Node2Vec, Neural Collaborative, Hybrid Ensemble, Contrastive SSL',
+    narration: '6 ML Recommendation Engines',
+    subtext: 'Transformer BERT, VAE, Node2Vec, Neural Collaborative, Knowledge Graph, Contrastive SSL',
     action: (props) => props.navigateTo('recommend'),
     duration: 5000,
   },
@@ -93,7 +93,6 @@ export default function GuidedTour({
       cleanup();
       const s = TOUR_STEPS[idx];
       if (!s) {
-        setSearchQuery('');
         onEnd();
         return;
       }
@@ -126,7 +125,6 @@ export default function GuidedTour({
         if (idx + 1 < TOUR_STEPS.length) {
           setStepIndex(idx + 1);
         } else {
-          setSearchQuery('');
           onEnd();
         }
       }, s.duration);
@@ -150,31 +148,26 @@ export default function GuidedTour({
     }
   }, [isActive]);
 
-  // Clear the tour's demo search so the constellation isn't left highlighted.
-  const endTour = useCallback(() => {
-    setSearchQuery('');
-    onEnd();
-  }, [setSearchQuery, onEnd]);
-
   const handleNext = () => {
     cleanup();
     if (stepIndex + 1 < totalSteps) {
       setStepIndex(stepIndex + 1);
     } else {
-      endTour();
+      onEnd();
     }
   };
 
   const handleSkip = () => {
     cleanup();
-    endTour();
+    onEnd();
   };
 
   return (
     <AnimatePresence>
       {isActive && step && (
         <motion.div
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-lg"
+          className="fixed bottom-24 left-1/2 z-50 w-[90vw] max-w-lg"
+          style={{ x: '-50%' }}
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 40, scale: 0.95 }}

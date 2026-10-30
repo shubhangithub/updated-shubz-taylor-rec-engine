@@ -47,10 +47,7 @@ export default function ExplainabilityCard({ result, engineColor, onClick }: Exp
   const [expanded, setExpanded] = useState(false);
 
   const hasBreakdown = result.feature_breakdown && Object.keys(result.feature_breakdown).length > 0;
-  // Engines return their rationale as `explanation`; `reason` only appears on
-  // editorial-bridge results — accept either so the card is never silently empty.
-  const reasonText = result.reason || result.explanation;
-  const hasReason = !!reasonText;
+  const hasReason = !!result.reason;
 
   return (
     <motion.div
@@ -129,7 +126,7 @@ export default function ExplainabilityCard({ result, engineColor, onClick }: Exp
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.1 }}
                 >
-                  &ldquo;{reasonText}&rdquo;
+                  &ldquo;{result.reason}&rdquo;
                 </motion.p>
               )}
 

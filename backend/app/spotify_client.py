@@ -35,7 +35,7 @@ class SpotifyClient:
             auth_manager = SpotifyClientCredentials(
                 client_id=client_id, client_secret=client_secret
             )
-            self.sp = spotipy.Spotify(auth_manager=auth_manager)
+            self.sp = spotipy.Spotify(auth_manager=auth_manager, requests_timeout=10, retries=1, status_retries=1)
             self.available = True
             logger.info("Spotify client initialized successfully.")
         except Exception as e:
@@ -127,14 +127,15 @@ class SpotifyClient:
             artist = artists[0]
             artist_id = artist["id"]
 
-            top_tracks = self.sp.artist_top_tracks(artist_id, country="US")
-            # Spotify deprecated Related Artists (Nov 2024) for apps without
-            # extended access — isolate it so its 403 doesn't sink the rest of
-            # the artist response (top tracks, images, genres).
+            # These endpoints are restricted for newer Spotify apps. Metadata
+            # must remain available even when optional enrichments are denied.
+            try:
+                top_tracks = self.sp.artist_top_tracks(artist_id, country="US")
+            except Exception:
+                top_tracks = {"tracks": []}
             try:
                 related = self.sp.artist_related_artists(artist_id)
-            except Exception as e:
-                logger.info(f"Related-artists unavailable for {artist_name}: {e}")
+            except Exception:
                 related = {"artists": []}
 
             images = artist.get("images", [])
@@ -295,33 +296,73 @@ class SpotifyClient:
             return []
 
 
-def get_itunes_preview(song_name: str, artist: str = "Taylor Swift") -> Optional[str]:
-    """Get a 30-second preview URL from iTunes Search API (free, no auth needed)."""
+# Cache successful lookups; failures remain retryable on the next request.
+from functools import lru_cache
+import re
+import unicodedata
+
+
+def _normalize_title(value: str) -> str:
+    return re.sub(r"[^\w]+", " ", unicodedata.normalize("NFKC", value).casefold()).strip()
+
+
+@lru_cache(maxsize=1024)
+def _itunes_lookup(song_name: str, artist: str, cache_window: int) -> Optional[Dict]:
+    import requests
     try:
-        import requests
-        from urllib.parse import quote_plus
-        # quote_plus, not replace(" ","+"): titles like "I Knew You Were
-        # Trouble & More" contain '&', which would otherwise terminate the
-        # term parameter and search on a truncated prefix.
-        query = quote_plus(f"{song_name} {artist}")
         resp = requests.get(
-            f"https://itunes.apple.com/search?term={query}&media=music&limit=3",
+            "https://itunes.apple.com/search",
+            params={"term": f"{song_name} {artist}", "media": "music", "entity": "song", "limit": 10},
             timeout=5,
         )
-        if resp.status_code != 200:
-            return None
-        data = resp.json()
-        results = data.get("results", [])
-        # Try to find exact match
-        for r in results:
-            if artist.lower() in r.get("artistName", "").lower():
-                return r.get("previewUrl")
-        # Fallback to first result
-        if results:
-            return results[0].get("previewUrl")
+        resp.raise_for_status()
+        results = resp.json().get("results", [])
+        title = _normalize_title(song_name)
+        for result in results:
+            if (_normalize_title(result.get("artistName", "")) == _normalize_title(artist)
+                    and _normalize_title(result.get("trackName", "")) == title
+                    and result.get("previewUrl")):
+                return result
+        # Alternate editions are acceptable only for the requested song and artist.
+        for result in results:
+            candidate = _normalize_title(result.get("trackName", ""))
+            if (_normalize_title(result.get("artistName", "")) == _normalize_title(artist)
+                    and candidate.startswith(title + " ") and result.get("previewUrl")):
+                return result
         return None
-    except Exception as e:
-        logger.warning(f"iTunes preview lookup failed for '{song_name}': {e}")
+    except (requests.RequestException, ValueError) as exc:
+        logger.warning("iTunes preview lookup failed: %s", type(exc).__name__)
+        # Exceptions are not cached by lru_cache.
+        raise
+
+
+def get_itunes_preview(song_name: str, artist: str = "Taylor Swift") -> Optional[str]:
+    """Resolve a matching preview, never a different artist's first search hit."""
+    import time
+    if not song_name.strip() or not artist.strip():
+        return None
+    try:
+        track = _itunes_lookup(song_name.strip(), artist.strip(), int(time.time() // 3600))
+        return track.get('previewUrl') if track else None
+    except Exception:
+        return None
+
+
+def get_itunes_song(song_name: str, artist: str = 'Taylor Swift') -> Optional[Dict]:
+    """Public metadata/preview fallback when Spotify cannot serve a recording."""
+    import time
+    if not song_name.strip() or not artist.strip():
+        return None
+    try:
+        track = _itunes_lookup(song_name.strip(), artist.strip(), int(time.time() // 3600))
+        if not track:
+            return None
+        return {'id': f"itunes-{track.get('trackId', '')}", 'name': track.get('trackName', song_name),
+                'artist': track.get('artistName', artist), 'album': track.get('collectionName', ''),
+                'preview_url': track.get('previewUrl'), 'external_url': track.get('trackViewUrl', ''),
+                'image': track.get('artworkUrl100', '').replace('100x100bb', '600x600bb') or None,
+                'metadata_source': 'iTunes'}
+    except Exception:
         return None
 
 

@@ -3,12 +3,12 @@ The Shubz-Taylor Recommendation Engine API — A Taylor Swift-centric music reco
 """
 
 import logging
-import os
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, HTMLResponse
+from app.spotify_auth import ALLOWED_ORIGINS
 
 from app.models import (
     SongSearchRequest,
@@ -16,9 +16,10 @@ from app.models import (
     MoodRequest,
     CrossArtistRequest,
     CompareRequest,
+    PlaylistRequest,
 )
-from app.spotify_client import spotify_client, get_itunes_preview
-from app.recommender import recommender, get_csv_features, get_song_lyrics, get_full_song_data
+from app.spotify_client import spotify_client, get_itunes_preview, get_itunes_song
+from app.recommender import recommender, get_csv_features, get_song_lyrics, get_full_song_data, get_recording_data
 from app.editorial import (
     get_editorial_recommendations,
     get_era_artists,
@@ -35,17 +36,9 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allowed origins come from CORS_ALLOW_ORIGINS (comma-separated) with sensible
-# defaults for local dev + the Vercel deployment. We do NOT reflect arbitrary
-# origins with credentials (that lets any site make credentialed calls); auth
-# is carried by an explicit session id in the request body, not cookies.
-_default_origins = "http://localhost:3000,http://127.0.0.1:3000,https://shubz-taylor-recommendation-engine.vercel.app"
-ALLOWED_ORIGINS = [o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", _default_origins).split(",") if o.strip()]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # preview deployments
+    allow_origins=list(ALLOWED_ORIGINS),
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -169,15 +162,16 @@ def get_song(song_id: str):
             )
 
         song_name = info.get("name", "")
+        is_taylor = info.get("artist", "").casefold() == "taylor swift"
 
         # Use dataset fallback if audio features are empty
         if not info.get("audio_features") or info["audio_features"] == {}:
-            csv_features = get_csv_features(song_name)
+            csv_features = get_csv_features(song_name) if is_taylor else None
             if csv_features:
                 info["audio_features"] = csv_features
 
         # Add full song data from dataset (lyrics, key_mode, etc.)
-        full_data = get_full_song_data(song_name)
+        full_data = get_recording_data(song_name, info.get("artist", ""))
         if full_data:
             if full_data.get("lyrics"):
                 info["lyrics"] = full_data["lyrics"]
@@ -201,7 +195,7 @@ def get_song(song_id: str):
                 info["preview_url"] = itunes_url
 
         # Check for editorial bridges
-        bridges = get_editorial_recommendations(song_name, limit=5)
+        bridges = get_editorial_recommendations(song_name, limit=5) if is_taylor else []
         info["editorial_bridges"] = bridges
 
         return info
@@ -355,34 +349,22 @@ def get_lyrics(song_name: str):
 
 
 @app.get("/api/song-data/{song_name}")
-def get_song_data(song_name: str):
-    """Get complete data for a Taylor Swift song (features + lyrics + metadata)."""
-    data = get_full_song_data(song_name)
-    if not data:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No data found for '{song_name}'",
-        )
-
-    # Normalize album to a canonical era so the frontend can theme it
-    from app.taylor_data import canonical_era
-    if data.get("album"):
-        data["album"] = canonical_era(data["album"])
-
-    # Add atmosphere if features are present
-    if data.get("danceability"):
-        data["atmosphere"] = recommender.get_song_atmosphere(data)
-
-    # Add editorial bridges
-    bridges = get_editorial_recommendations(data.get("name", song_name), limit=5)
-    data["editorial_bridges"] = bridges
-
-    # Add iTunes preview URL
-    if not data.get("preview_url"):
-        itunes_url = get_itunes_preview(data.get("name", song_name))
-        if itunes_url:
-            data["preview_url"] = itunes_url
-
+def get_song_data(song_name: str, artist: str = 'Taylor Swift'):
+    """Resolve a recording by title AND artist, with a credential-free metadata fallback."""
+    data = get_recording_data(song_name, artist)
+    metadata = get_itunes_song(song_name, artist)
+    if not data and not metadata:
+        raise HTTPException(status_code=404, detail="No matching recording found")
+    data = {**(metadata or {}), **(data or {})}
+    data['artist'] = artist
+    if metadata:
+        for field in ['preview_url', 'external_url', 'image', 'id']:
+            if not data.get(field):
+                data[field] = metadata.get(field)
+    if data.get('danceability') is not None:
+        data['atmosphere'] = recommender.get_song_atmosphere(data)
+    data['editorial_bridges'] = (get_editorial_recommendations(data.get('name', song_name), limit=5)
+                                if artist.casefold() == 'taylor swift' else [])
     return data
 
 
@@ -391,14 +373,12 @@ def get_all_song_features():
     """Return audio features for all songs in the dataset (for Observatory)."""
     from app.recommender import _TAYLOR_DATA
 
-    from app.taylor_data import canonical_era
-
     songs = []
     for key, song in _TAYLOR_DATA.items():
         if song.get("danceability") is not None:
             songs.append({
                 "name": song.get("name", key),
-                "album": canonical_era(song.get("album", "")),
+                "album": song.get("album", ""),
                 "danceability": song.get("danceability", 0),
                 "energy": song.get("energy", 0),
                 "valence": song.get("valence", 0),
@@ -416,13 +396,12 @@ def get_all_song_features():
 def get_era_features():
     """Compute real per-era average audio features from the dataset."""
     from app.recommender import _TAYLOR_DATA
-    from app.taylor_data import canonical_era
     import numpy as np
 
     feature_keys = ["danceability", "energy", "valence", "acousticness",
                     "speechiness", "instrumentalness", "liveness", "tempo", "loudness"]
 
-    # Group songs by canonical era (Taylor's Versions fold into the original)
+    # Group songs by album/era
     era_songs = {}
     for key, song in _TAYLOR_DATA.items():
         album = song.get("album", "Unknown")
@@ -430,8 +409,9 @@ def get_era_features():
             continue
         if not song.get("danceability"):  # Skip songs without features
             continue
-        era = canonical_era(album)
-        era_songs.setdefault(era, []).append(song)
+        if album not in era_songs:
+            era_songs[album] = []
+        era_songs[album].append(song)
 
     # Compute averages
     result = {}
@@ -461,24 +441,6 @@ def get_insights():
         raise HTTPException(status_code=404, detail="Insights not computed yet. Run: python -m app.compute_insights")
     with open(path) as f:
         return _json.load(f)
-
-
-@app.get("/api/sound-moods")
-def get_sound_moods():
-    """Moods available for CLAP text->audio search (precomputed prompt vectors)."""
-    from app.engines import audio_engine
-    return {"moods": audio_engine.available_moods()}
-
-
-@app.get("/api/sound-mood/{mood}")
-def sound_mood_search(mood: str, limit: int = 12):
-    """Rank songs by how much their AUDIO sounds like the mood's text prompt
-    (CLAP joint audio-text space; numpy-only at runtime)."""
-    from app.engines import audio_engine
-    results = audio_engine.mood_search(mood, limit=limit)
-    if not results:
-        raise HTTPException(status_code=404, detail=f"Unknown mood '{mood}' or audio embeddings not computed")
-    return {"mood": mood.lower(), "results": results, "count": len(results)}
 
 
 @app.get("/api/trending")
@@ -525,11 +487,9 @@ def get_engines():
 @app.post("/api/engine/{engine_key}")
 def run_engine_endpoint(engine_key: str, request: CompareRequest):
     """Run a specific recommendation engine."""
-    from app.rec_engines import ENGINES, run_engine
+    from app.rec_engines import run_engine, ENGINES
     if engine_key not in ENGINES:
-        # 404 instead of a silent empty list — typos and stale frontend keys
-        # were previously indistinguishable from "no recommendations".
-        raise HTTPException(status_code=404, detail=f"Unknown engine '{engine_key}'. Available: {sorted(ENGINES)}")
+        raise HTTPException(status_code=404, detail="Unknown recommendation engine")
     results = run_engine(
         key=engine_key,
         song_names=request.song_names,
@@ -541,7 +501,7 @@ def run_engine_endpoint(engine_key: str, request: CompareRequest):
 
 @app.post("/api/compare")
 def compare_engines(request: CompareRequest):
-    """Run all registered ML recommendation engines on the same seed songs."""
+    """Run all 5 ML recommendation engines on the same seed songs."""
     try:
         from app.rec_engines import ENGINES, run_engine
 
@@ -652,68 +612,58 @@ def get_engine_stats():
 # Spotify User OAuth — Playlist Export
 # ============================================================
 
+def _session(authorization: Optional[str]) -> str:
+    return authorization[7:] if authorization and authorization.startswith("Bearer ") else ""
+
+
 @app.get("/api/spotify/login")
-def spotify_login():
-    """Redirect to Spotify OAuth login page."""
-    from app.spotify_auth import get_login_url
-    return RedirectResponse(get_login_url())
+def spotify_login(origin: str = ""):
+    from app.spotify_auth import get_login_url, FRONTEND_URL, configured
+    if not configured():
+        raise HTTPException(status_code=503, detail="Spotify export is not configured on this server")
+    try:
+        return RedirectResponse(get_login_url(origin or FRONTEND_URL))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
-@app.get("/api/spotify/callback", response_class=HTMLResponse)
-def spotify_callback(code: str = "", state: str = ""):
-    """Handle the Spotify OAuth callback inside the login popup.
-
-    On success, hand the unguessable session id to the opener via postMessage
-    and close the window — the session id never appears in the page body a
-    user could copy, and each browser gets its own.
-    """
-    from app.spotify_auth import exchange_code
-    if not code:
-        raise HTTPException(status_code=400, detail="Missing authorization code")
-    session_id = exchange_code(code, state)
-    ok = bool(session_id)
-    payload = (
-        f'{{ type: "spotify-auth", ok: true, sessionId: "{session_id}" }}'
-        if ok else '{ type: "spotify-auth", ok: false }'
-    )
-    target_origin = os.getenv("FRONTEND_ORIGIN", "*")
-    message = "Spotify connected. You can close this window." if ok else "Spotify authentication failed."
-    html = f"""<!doctype html><html><body style="background:#0a0a0a;color:#aaa;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh">
-<p>{message}</p>
-<script>
-  try {{ if (window.opener) window.opener.postMessage({payload}, "{target_origin}"); }} catch (e) {{}}
-  setTimeout(function () {{ window.close(); }}, 800);
-</script>
-</body></html>"""
-    return HTMLResponse(content=html, status_code=200 if ok else 401)
+@app.get("/api/spotify/callback")
+def spotify_callback(code: str = "", state: str = "", error: str = ""):
+    import json
+    from app.spotify_auth import consume_state, exchange_code
+    origin = consume_state(state)
+    if not origin:
+        raise HTTPException(status_code=400, detail="Invalid or expired OAuth state")
+    session = exchange_code(code) if code and not error else None
+    payload = {"type": "spotify-auth", "session": session,
+               "error": None if session else "Spotify sign-in was cancelled or failed. Please retry."}
+    # Escape script delimiters even though all dynamic values are server-generated.
+    message = json.dumps(payload).replace("<", "\\u003c")
+    target = json.dumps(origin).replace("<", "\\u003c")
+    return HTMLResponse(
+        "<!doctype html><html><body><p>You can close this window.</p><script>"
+        f"if(window.opener){{window.opener.postMessage({message},{target});window.close();}}"
+        "</script></body></html>", headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
 
 
 @app.get("/api/spotify/status")
-def spotify_status(session_id: str = ""):
-    """Auth status for the caller's OWN session id (empty id => not authenticated)."""
+def spotify_status(authorization: Optional[str] = Header(default=None)):
     from app.spotify_auth import get_user_info
-    return get_user_info(session_id)
+    return get_user_info(_session(authorization))
 
 
 @app.post("/api/spotify/create-playlist")
-def create_spotify_playlist(request: dict):
-    """Create a Spotify playlist in the SESSION OWNER's account."""
+def create_spotify_playlist(request: PlaylistRequest, authorization: Optional[str] = Header(default=None)):
     from app.spotify_auth import create_playlist, get_user_info
-    session_id = request.get("session_id", "")
-    if not get_user_info(session_id).get("authenticated"):
-        raise HTTPException(status_code=401, detail="Not authenticated. Login via /api/spotify/login first.")
-
-    song_names = request.get("songs", [])
-    playlist_name = request.get("name", "Shubz-Taylor Recommendations")
-    description = request.get("description", "Generated by The Shubz-Taylor Recommendation Engine")
-
-    if not song_names:
-        raise HTTPException(status_code=400, detail="No songs provided")
-
-    result = create_playlist(session_id, playlist_name, description, song_names)
+    session = _session(authorization)
+    if not get_user_info(session)["authenticated"]:
+        raise HTTPException(status_code=401, detail="Connect Spotify before exporting a playlist")
+    try:
+        result = create_playlist(session, request.name, request.description, request.songs)
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
     if not result:
-        raise HTTPException(status_code=500, detail="Failed to create playlist")
-
+        raise HTTPException(status_code=401, detail="Spotify session expired. Please reconnect.")
     return result
 
 
@@ -724,7 +674,9 @@ def create_spotify_playlist(request: dict):
 _lyrics_sync = None
 
 @app.get("/api/lyrics-sync/{song_name}")
-def get_lyrics_sync(song_name: str):
+def get_lyrics_sync(song_name: str, artist: str = "Taylor Swift"):
+    if artist.casefold() != "taylor swift":
+        raise HTTPException(status_code=404, detail="No preview-aligned timings for this artist")
     """Get Whisper-aligned lyric timings for a song."""
     global _lyrics_sync
     import os, json as _json
@@ -736,23 +688,15 @@ def get_lyrics_sync(song_name: str):
         else:
             _lyrics_sync = {}
 
-    q = song_name.strip().lower()
-    data = _lyrics_sync.get(q)
-    if not data and len(q) >= 4:
-        # Guarded fuzzy match: prefer the most specific (longest) key, so a
-        # short query can't grab an unrelated song's timings.
-        best_key, best_len = None, -1
+    data = _lyrics_sync.get(song_name.lower())
+    if not data:
+        # Try fuzzy match
         for key in _lyrics_sync:
-            if (q in key or key in q) and len(key) > best_len:
-                best_key, best_len = key, len(key)
-        if best_key:
-            data = _lyrics_sync[best_key]
+            if song_name.lower() in key or key in song_name.lower():
+                data = _lyrics_sync[key]
+                break
 
     if not data:
         raise HTTPException(status_code=404, detail=f"No sync data for '{song_name}'")
 
-    # Flag low-confidence alignments so the client can fall back to unsynced
-    # lyrics instead of showing timings Whisper couldn't actually align.
-    data = dict(data)
-    data["low_confidence"] = data.get("alignment_score", 0) < 8
     return data

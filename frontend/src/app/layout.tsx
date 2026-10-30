@@ -1,6 +1,7 @@
 'use client';
 
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import { useEffect } from 'react';
 
 export default function RootLayout({
@@ -79,6 +80,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#050505] text-[#e8e8e8] min-h-screen overflow-x-hidden scan-line">
         {children}
+        <Analytics />
       </body>
     </html>
   );

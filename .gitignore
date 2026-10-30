@@ -49,5 +49,6 @@ next-env.d.ts
 *.cache
 backend/.cache
 
-# Apple preview clips (never redistribute; only derived embeddings are committed)
-backend/ml_data/previews/
+# Browser test artifacts
+playwright-report/
+test-results/

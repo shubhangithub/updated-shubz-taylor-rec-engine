@@ -404,9 +404,7 @@ function EraSection({
   onSongClick: (song: TaylorSong) => void;
   onArtistClick: (artist: string) => void;
 }) {
-  // Hooks must run unconditionally — call useRef before any early return.
   const sectionRef = useRef<HTMLDivElement>(null);
-
   const theme = ERA_THEMES[era];
   if (!theme) return null;
 

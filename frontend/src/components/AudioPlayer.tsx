@@ -137,6 +137,7 @@ export default function AudioPlayer({ song, enabled, onToggle, onAudioRef }: Aud
           {audioRef.current ? (
             <button
               onClick={togglePlayPause}
+              aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
               className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-white/10"
               style={{ color }}
             >

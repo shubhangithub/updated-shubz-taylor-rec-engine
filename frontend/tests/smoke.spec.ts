@@ -97,3 +97,47 @@ test('a cross-artist result opens the requested recording without Spotify', asyn
   await expect(page.getByRole('heading', { name: 'Love Story', exact: true })).toBeVisible();
   await expect(page.getByText('Other Artist', { exact: true }).first()).toBeVisible();
 });
+
+
+test('song controls and persistent player share a single audio stream', async ({ page, isMobile }) => {
+  const wav = Buffer.alloc(44 + 32000);
+  wav.write('RIFF', 0); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8);
+  wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22);
+  wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28);
+  wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34);
+  wav.write('data', 36); wav.writeUInt32LE(32000, 40);
+  const preview = `data:audio/wav;base64,${wav.toString('base64')}`;
+  await page.addInitScript(() => {
+    localStorage.setItem('st-tour-prompt-seen', '1');
+    const NativeAudio = window.Audio;
+    (window as any).__previewAudios = [];
+    window.Audio = class extends NativeAudio {
+      constructor(src?: string) {
+        super(src);
+        (window as any).__previewAudios.push(this);
+      }
+    };
+  });
+  await page.route('**/api/search', route => route.fulfill({ json: { results: [] } }));
+  await page.route('**/api/song-data/**', route => route.fulfill({ json: {
+    name: 'cardigan', artist: 'Taylor Swift', album: 'folklore', preview_url: preview,
+  } }));
+  await page.route('**/api/engine/lyrics_transformer', route => route.fulfill({ json: {
+    recommendations: [{ name: 'cardigan', artist: 'Taylor Swift', similarity: 0.8 }], count: 1,
+  } }));
+  await page.goto('/');
+  const entry = page.getByRole('button', { name: 'Enter the music universe' });
+  if (isMobile) await entry.tap({ position: { x: 195, y: 422 } });
+  else await entry.press('Enter');
+  await page.getByRole('button', { name: 'Recommend', exact: true }).click();
+  await page.getByRole('button', { name: 'cardigan', exact: true }).click();
+  await page.getByRole('button', { name: 'Find via Transformer Lyrics', exact: true }).click();
+  await page.getByRole('button', { name: 'Explore cardigan by Taylor Swift', exact: true }).click();
+  await page.getByRole('heading', { name: 'cardigan', exact: true }).waitFor();
+  await expect.poll(() => page.evaluate(() => (window as any).__previewAudios.filter((a: HTMLAudioElement) => !a.paused).length)).toBe(1);
+  expect(await page.evaluate(() => (window as any).__previewAudios.length)).toBe(1);
+  await page.getByRole('button', { name: 'Pause song preview', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Play preview', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Play preview', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Pause song preview', exact: true })).toBeVisible();
+});

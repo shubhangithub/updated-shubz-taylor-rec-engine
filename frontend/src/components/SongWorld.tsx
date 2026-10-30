@@ -181,30 +181,12 @@ function SongOrbitControls() {
 
 // Audio preview player
 function AudioPreview({ url, isPlaying, onToggle }: { url: string | null; isPlaying: boolean; onToggle: () => void }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    if (!url) return;
-    audioRef.current = new Audio(url);
-    audioRef.current.volume = 0.3;
-
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-    };
-  }, [url]);
-
-  useEffect(() => {
-    if (!audioRef.current) return;
-    if (isPlaying) audioRef.current.play().catch(() => {});
-    else audioRef.current.pause();
-  }, [isPlaying]);
-
   if (!url) return null;
 
   return (
     <button
       onClick={onToggle}
+      aria-label={isPlaying ? 'Pause song preview' : 'Play song preview'}
       className="rounded-full p-3 transition-all duration-300 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.08] text-white/70 hover:text-white"
     >
       {isPlaying ? <Pause size={18} /> : <Play size={18} />}
@@ -560,8 +542,8 @@ function shouldMerge(current: string, next: string): boolean {
   return false;
 }
 
-function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songName, artist }: {
-  lyrics: string; isPlaying: boolean; tempo: number; eraColor: string; eraFontClass: string; songName: string; artist: string;
+function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songName, artist, audio }: {
+  lyrics: string; isPlaying: boolean; tempo: number; eraColor: string; eraFontClass: string; songName: string; artist: string; audio: HTMLAudioElement | null;
 }) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const linesRef = useRef<string[]>([]);
@@ -623,37 +605,28 @@ function KaraokeLyrics({ lyrics, isPlaying, tempo, eraColor, eraFontClass, songN
     }
   }, [isPlaying]);
 
-  // Advance lines — use sync timings mapped to full lyrics, or tempo-based fallback
+  // Follow the shared audio clock, including seeks, loops and late-arriving sync data.
   useEffect(() => {
     if (!isPlaying || linesRef.current.length === 0) return;
-
-    if (useSyncRef.current && syncTimingsRef.current.length > 2) {
-      // PRECISE MODE: Whisper timings mapped to full lyrics via start_line offset
+    const update = () => {
+      const elapsed = audio?.currentTime ?? (Date.now() - playStartRef.current) / 1000;
       const timings = syncTimingsRef.current;
-      const offset = startLineRef.current;
-      const totalLines = linesRef.current.length;
-      const interval = setInterval(() => {
-        const elapsed = (Date.now() - playStartRef.current) / 1000;
-        // Find which sync line we're on based on elapsed time
-        let syncIdx = 0;
+      if (useSyncRef.current && timings.length > 2) {
+        let syncIndex = 0;
         for (let i = 0; i < timings.length; i++) {
-          if (elapsed >= timings[i].start_time) syncIdx = i;
+          if (elapsed >= timings[i].start_time) syncIndex = i;
           else break;
         }
-        // Map sync index back to position in the full lyrics
-        const fullIdx = Math.min(offset + syncIdx, totalLines - 1);
-        setCurrentLineIndex(fullIdx);
-      }, 100);
-      return () => clearInterval(interval);
-    } else {
-      // FALLBACK: Tempo-based estimation
-      const msPerLine = Math.max(2000, Math.min(4000, (60000 / Math.max(tempo, 60)) * 2));
-      const interval = setInterval(() => {
-        setCurrentLineIndex(prev => (prev + 1) % linesRef.current.length);
-      }, msPerLine);
-      return () => clearInterval(interval);
-    }
-  }, [isPlaying, tempo]);
+        setCurrentLineIndex(Math.min(startLineRef.current + syncIndex, linesRef.current.length - 1));
+      } else {
+        const msPerLine = Math.max(2000, Math.min(4000, (60000 / Math.max(tempo, 60)) * 2));
+        setCurrentLineIndex(Math.floor(elapsed * 1000 / msPerLine) % linesRef.current.length);
+      }
+    };
+    update();
+    const interval = setInterval(update, 100);
+    return () => clearInterval(interval);
+  }, [isPlaying, tempo, audio, songName, lyrics]);
 
   const lines = linesRef.current;
   if (lines.length === 0) return null;
@@ -724,6 +697,9 @@ interface SongWorldProps {
   editorialBridges: EditorialBridge[];
   onBack: () => void;
   onSongSelect: (songId: string) => void;
+  audio: HTMLAudioElement | null;
+  playbackActive: boolean;
+  onTogglePlayback: () => void;
 }
 
 function useIsMobile() {
@@ -737,8 +713,8 @@ function useIsMobile() {
   return isMobile;
 }
 
-export default function SongWorld({ song, recommendations, editorialBridges, onBack, onSongSelect }: SongWorldProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
+export default function SongWorld({ song, recommendations, editorialBridges, onBack, onSongSelect, audio, playbackActive, onTogglePlayback }: SongWorldProps) {
+  const isPlaying = playbackActive && !!audio && audio.src === song.preview_url;
   const [showLyrics, setShowLyrics] = useState(false);
   // Beat pulse based on song tempo
   const tempo = (song as any).audio_features?.tempo || (song.features as any)?.tempo || 120;
@@ -765,6 +741,7 @@ export default function SongWorld({ song, recommendations, editorialBridges, onB
           eraFontClass={getEraFontClass(song.album)}
           songName={song.name}
           artist={song.artist}
+          audio={audio}
         />
       )}
 
@@ -789,7 +766,7 @@ export default function SongWorld({ song, recommendations, editorialBridges, onB
       <div className="absolute inset-0 pointer-events-none">
         {/* Song info card - bottom left */}
         <motion.div
-          className="absolute bottom-24 left-4 right-4 md:left-8 md:right-auto pointer-events-auto md:max-w-lg"
+          className="absolute bottom-56 md:bottom-24 left-4 right-4 md:left-8 md:right-auto pointer-events-auto md:max-w-lg max-h-[calc(100dvh-20rem)] md:max-h-[calc(100vh-10rem)] overflow-y-auto"
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -842,7 +819,7 @@ export default function SongWorld({ song, recommendations, editorialBridges, onB
               <AudioPreview
                 url={song.preview_url}
                 isPlaying={isPlaying}
-                onToggle={() => setIsPlaying(!isPlaying)}
+                onToggle={onTogglePlayback}
               />
               {lyrics && (
                 <button

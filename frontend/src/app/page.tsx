@@ -204,11 +204,23 @@ export default function Home() {
   const [moodSongs] = useState<Record<string, string[]>>(FALLBACK_MOOD_SONGS);
   const [eraArtists, setEraArtists] = useState<Record<string, EraArtist[]>>(FALLBACK_ERA_ARTISTS);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [isTourActive, setIsTourActive] = useState(false);
   const [showTourPrompt, setShowTourPrompt] = useState(false);
 
   // Beat detection — connects to audio player for visual pulse sync
-  const { beatIntensity, connectAudio } = useBeat();
+  const { beatIntensity, connectAudio, isPlaying: playbackActive } = useBeat();
+  const handleAudioRef = useCallback((audio: HTMLAudioElement) => {
+    setAudioElement(audio);
+    connectAudio(audio);
+  }, [connectAudio]);
+  const togglePlayback = useCallback(() => {
+    if (!audioElement) return;
+    if (audioElement.paused) {
+      setAudioEnabled(true);
+      audioElement.play().catch(() => {});
+    } else audioElement.pause();
+  }, [audioElement]);
 
   // Show tour prompt on first constellation visit
   useEffect(() => {
@@ -341,7 +353,7 @@ export default function Home() {
         const data = await res.json();
         if (data.preview_url) {
           // Set as selected song just for the audio player, without navigating
-          setSelectedSong({
+          setSelectedSong(previous => previous || {
             id: 'enchanted-welcome',
             name: data.name || 'Enchanted',
             artist: 'Taylor Swift',
@@ -401,6 +413,9 @@ export default function Home() {
             transition={{ duration: 0.5 }}
           >
             <SongWorld
+              audio={audioElement}
+              playbackActive={playbackActive}
+              onTogglePlayback={togglePlayback}
               song={selectedSong}
               recommendations={recommendations}
               editorialBridges={editorialBridges}
@@ -573,16 +588,10 @@ export default function Home() {
       {/* Persistent audio player */}
       {currentView !== 'vault' && (
         <AudioPlayer
-          song={selectedSong ? {
-            name: selectedSong.name,
-            artist: selectedSong.artist,
-            album: selectedSong.album,
-            image: selectedSong.image,
-            preview_url: selectedSong.preview_url,
-          } : null}
+          song={selectedSong}
           enabled={audioEnabled}
           onToggle={() => setAudioEnabled(prev => !prev)}
-          onAudioRef={connectAudio}
+          onAudioRef={handleAudioRef}
         />
       )}
     </main>
